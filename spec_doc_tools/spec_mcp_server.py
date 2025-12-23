@@ -21,6 +21,8 @@ Read the `spec_doc_tools` help docs or call the `spec_help` resource for details
 
 OPERATION_NAME_MAP = {
     "spec_sections_get": "spec_sections_get",
+    "spec_sections_v2_get": "spec_sections_v2_get",
+    "spec_version_resolve_get": "spec_version_resolve_get",
     "spec_sections_by_heading_get": "spec_sections_by_heading_get",
     "spec_tables_get": "spec_tables_get",
     "spec_toc_get": "spec_toc_get",
