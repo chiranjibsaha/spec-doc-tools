@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from spec_doc_tools.spec_docs import SpecDocError, extract_table_html, resolve_doc_paths
+from spec_doc_tools import spec_server
 
 
 def _write(path: Path, content: str) -> None:
@@ -63,6 +64,21 @@ def test_load_config_expands_user(monkeypatch, tmp_path: Path) -> None:
 
     loaded = load_spec_config()
     assert str(loaded.specs_dir).startswith(str(Path.home()))
+
+
+def test_find_latest_accepts_flat_files(tmp_path: Path, monkeypatch) -> None:
+    """latest version detection should pick up flat html/toc files (no nested dir)."""
+
+    root = tmp_path / "specs"
+    root.mkdir()
+    # Create flat html/toc for two versions
+    (root / "38901-i60.html").write_text("", encoding="utf-8")
+    (root / "38901-i60_toc.json").write_text("{}", encoding="utf-8")
+    (root / "38901-j00.html").write_text("", encoding="utf-8")
+    (root / "38901-j00_toc.json").write_text("{}", encoding="utf-8")
+
+    latest = spec_server._find_latest_spec_version("38901", str(root))
+    assert latest == spec_server._decode_version_suffix("j00")
 
 
 def test_extract_table_accepts_id_without_prefix(tmp_path: Path) -> None:
