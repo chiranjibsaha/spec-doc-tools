@@ -38,10 +38,7 @@ def test_section_v2_returns_single_chunk(tmp_path: Path) -> None:
     _write_fixture_spec(tmp_path, spec_id)
 
     client = TestClient(app)
-    resp = client.get(
-        f"/v2/specs/{spec_id}/sections/4-7-2",
-        params={"docs_dir": str(tmp_path)},
-    )
+    resp = client.get(f"/v2/specs/{spec_id}/sections/4-7-2", params={"docs_dir": str(tmp_path)})
 
     assert resp.status_code == 200
     payload = resp.json()
@@ -49,4 +46,6 @@ def test_section_v2_returns_single_chunk(tmp_path: Path) -> None:
     markdown = payload["markdown"]
     assert markdown["chunk_count"] == 1
     assert len(markdown["chunks"]) == 1
-    assert markdown["chunks"][0]["md_snippet"]  # full content present
+    chunk = markdown["chunks"][0]
+    assert chunk["md_snippet"]  # full content present
+    assert chunk["bytes"] == markdown["bytes"]

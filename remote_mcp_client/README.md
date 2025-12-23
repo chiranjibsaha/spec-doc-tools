@@ -40,8 +40,7 @@ Path conventions:
   Example: `curl "http://<api_host>:<port>/specs/38901-j10/grep?pattern=beamforming&regex=false"`
 
 ### Section tool response shape (v2 passthrough)
-- The `spec_section_get` tool now returns the entire section markdown in `md_snippet` (no truncation, single chunk).
-- Chunk metadata (`chunk_count`, `chunk_size`) is omitted from the tool response, even though the upstream API still supports chunked delivery.
+- The `spec_section_get` tool now returns the entire section markdown in `md_snippet` (no truncation, single chunk). Chunking is disabled on the upstream endpoint; `chunk_size` is ignored.
 - When `persist=true`, the full markdown is written to the path shown in `write_to_files`.
 
 ## Agent prompt snippet (to maintain the write_to_files chain)

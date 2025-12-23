@@ -57,12 +57,12 @@ HELP_ENTRIES = [
         "name": "spec_sections_v2_get",
         "method": "GET",
         "path": "/v2/specs/{spec_id}/sections/{section_id}",
-        "description": "Extract a section with chunking + embedded images.",
+        "description": "Extract a section with embedded images (no chunking).",
         "request": {
             "path": {"spec_id": "str", "section_id": "str"},
             "query": {
                 "include_heading": "bool (default true)",
-                "chunk_size": "int (default 1200)",
+                "chunk_size": "int (unused; kept for backward compatibility)",
                 "docs_dir": "Optional[str]",
             },
         },
@@ -582,14 +582,14 @@ def get_section_v2(
     chunk_size: int = Query(
         1200,
         ge=1,
-        description="Approximate max characters per chunk (uses paragraph boundaries).",
+        description="Ignored (kept for backward compatibility).",
     ),
     docs_dir: Optional[str] = Query(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
 ) -> dict:
-    """Extract a section as Markdown with chunking and embedded images (base64)."""
+    """Extract a section as Markdown with embedded images (base64)."""
 
     try:
         html_path, toc_path = _resolve_paths(spec_id, docs_dir)
@@ -598,26 +598,19 @@ def get_section_v2(
         section_html_id = resolve_section_html_id(entries, section_id)
         fragment = extract_section_html(html_path, section_html_id, include_heading=include_heading)
         markdown, images = html_fragment_to_markdown_with_images(fragment, html_path)
-        chunks = _chunk_markdown(markdown, chunk_size)
-
-        chunk_payload = []
-        for idx, chunk_md in enumerate(chunks, start=1):
-            chunk_images = [img for img in images if f"({img['src']})" in chunk_md]
-            chunk_payload.append(
-                {
-                    "index": idx,
-                    "bytes": len(chunk_md.encode("utf-8")),
-                    "md_snippet": chunk_md,
-                    "images": chunk_images,
-                }
-            )
-
         payload = {
             "bytes": len(markdown.encode("utf-8")),
             "md": markdown,
-            "chunk_count": len(chunks),
-            "chunk_size": chunk_size,
-            "chunks": chunk_payload,
+            "chunk_count": 1,
+            "chunk_size": len(markdown.encode("utf-8")),
+            "chunks": [
+                {
+                    "index": 1,
+                    "bytes": len(markdown.encode("utf-8")),
+                    "md_snippet": markdown,
+                    "images": images,
+                }
+            ],
         }
     except SpecDocError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc

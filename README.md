@@ -24,7 +24,7 @@ Run: `spec-api  # defaults to 0.0.0.0:8010`
 Set the specs root via `--docs-dir /path/to/specs`, or export `SPEC_DOCS_DIR`. When installed site-wide, you can also point to a config file with `SPEC_CONFIG_PATH=/path/to/spec_config.json`.
 
 Endpoints (+ curl examples):
-- Sections v2: `GET /v2/specs/{spec_id}/sections/{section_id}` — Markdown + images.  
+- Sections v2: `GET /v2/specs/{spec_id}/sections/{section_id}` — Markdown + images (single chunk; `chunk_size` is ignored).  
   Example: `curl "http://localhost:8010/v2/specs/38901-j10/sections/4-7-2"`
 - Sections by heading: `GET /specs/{spec_id}/sections/by-heading?heading_text=...` — Case-insensitive heading match.  
   Example: `curl "http://localhost:8010/specs/38901-j10/sections/by-heading?heading_text=Random%20access"`
