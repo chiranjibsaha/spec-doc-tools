@@ -51,6 +51,20 @@ def test_resolve_doc_paths_falls_back_to_flat(monkeypatch, tmp_path: Path) -> No
     assert toc_path == flat_toc
 
 
+def test_load_config_expands_user(monkeypatch, tmp_path: Path) -> None:
+    """~ in specs_dir should expand to the home directory."""
+
+    monkeypatch.delenv("SPEC_DOCS_DIR", raising=False)
+    cfg = tmp_path / "spec_config.json"
+    cfg.write_text('{"specs_dir": "~/my/specs"}', encoding="utf-8")
+
+    monkeypatch.setenv("SPEC_CONFIG_PATH", str(cfg))
+    from spec_doc_tools.spec_config import load_spec_config
+
+    loaded = load_spec_config()
+    assert str(loaded.specs_dir).startswith(str(Path.home()))
+
+
 def test_extract_table_accepts_id_without_prefix(tmp_path: Path) -> None:
     """Table lookup should work when caller omits the 'Table' prefix."""
 

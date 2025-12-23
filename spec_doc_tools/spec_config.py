@@ -57,7 +57,7 @@ def load_spec_config(config_path: Path | None = None) -> SpecConfig:
     if "SPEC_DOCS_DIR" in os.environ:
         specs_dir_raw = os.environ["SPEC_DOCS_DIR"]
 
-    specs_dir = Path(specs_dir_raw)
+    specs_dir = Path(specs_dir_raw).expanduser()
     if not specs_dir.is_absolute():
         base = cfg_path.parent if cfg_path else Path.cwd()
         specs_dir = (base / specs_dir).resolve()
