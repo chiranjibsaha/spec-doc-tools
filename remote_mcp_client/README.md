@@ -25,6 +25,20 @@ Path conventions:
 - Grep results: `tmp/spec_extracts/{spec_id}/grep/{pattern_slug}.json`
 - Version resolver (spec_id + presence): `tmp/spec_extracts/{spec_number}/resolve.json`
 
+## Tool overview and curl examples (remote API)
+- `spec_section_get` → `/v2/specs/{spec_id}/sections/{section_id}`  
+  Example: `curl "http://<api_host>:<port>/v2/specs/38901-j10/sections/4-7-2?chunk_size=1200"`
+- `spec_sections_by_heading_get` → `/specs/{spec_id}/sections/by-heading`  
+  Example: `curl "http://<api_host>:<port>/specs/38901-j10/sections/by-heading?heading_text=Random%20access"`
+- `spec_tables_get` → `/specs/{spec_id}/tables/{table_id}`  
+  Example: `curl "http://<api_host>:<port>/specs/38901-j10/tables/Table5.4-1"`
+- `spec_version_resolve_get` (supports `version=latest`) → `/v2/specs/resolve?spec_number=38901&version=latest`  
+  Example: `curl "http://<api_host>:<port>/v2/specs/resolve?spec_number=38901&version=latest"`
+- `spec_toc_get` → `/specs/{spec_id}/toc`  
+  Example: `curl "http://<api_host>:<port>/specs/38901-j10/toc?depth=3"`
+- `spec_grep_get` → `/specs/{spec_id}/grep?pattern=...&regex=bool`  
+  Example: `curl "http://<api_host>:<port>/specs/38901-j10/grep?pattern=beamforming&regex=false"`
+
 ## Agent prompt snippet (to maintain the write_to_files chain)
 Add this to your agent instructions so the MCP payloads are written locally instead of flooding the LLM:
 

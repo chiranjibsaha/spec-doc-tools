@@ -22,14 +22,19 @@ Specs directory is configured via `spec_config.json` (defaults to `./doc`), or o
 ## API (FastAPI)
 Run: `spec-api  # defaults to 0.0.0.0:8010`
 
-Endpoints:
-- `GET /specs/{spec_id}/sections/{section_id}` — Markdown + chunk metadata (`bytes`, `chunk_count`, `chunks[*].md_snippet`); `chunk_size` tunes chunk length.
-- `GET /v2/specs/{spec_id}/sections/{section_id}` — Same as above but also returns embedded images (base64 + paths) per chunk.
-- `GET /specs/{spec_id}/sections/by-heading?heading_text=...` — Match heading text (case-insensitive); supports `include_heading` and `chunk_size`; 404 returns `suggestions`.
-- `GET /specs/{spec_id}/tables/{table_id}` — Table to Markdown with caption + chunks; match by caption prefix or table id.
-- `GET /v2/specs/resolve?spec_number=38901&version=19.1.0` — Build `spec_id` (or use `version=latest` or `major/minor/patch`) and report file/folder presence for the spec bundle.
-- `GET /specs/{spec_id}/toc` — TOC JSON; optional `depth` limit and `section_id` prefix filter.
-- `GET /specs/{spec_id}/grep?pattern=...&regex=bool` — Case-insensitive substring or regex search over spec HTML. Returns `match_count`, per-match `line`, `char_offset`, `message_length`, `message`, plus `chunks` (one per match).
+Endpoints (+ curl examples):
+- Sections v2: `GET /v2/specs/{spec_id}/sections/{section_id}` — Markdown + images, chunked.  
+  Example: `curl "http://localhost:8010/v2/specs/38901-j10/sections/4-7-2?chunk_size=1200"`
+- Sections by heading: `GET /specs/{spec_id}/sections/by-heading?heading_text=...` — Case-insensitive heading match.  
+  Example: `curl "http://localhost:8010/specs/38901-j10/sections/by-heading?heading_text=Random%20access"`
+- Tables: `GET /specs/{spec_id}/tables/{table_id}` — Table to Markdown with caption.  
+  Example: `curl "http://localhost:8010/specs/38901-j10/tables/Table5.4-1"`
+- Version resolver (supports `version=latest` or `major/minor/patch`): `GET /v2/specs/resolve?spec_number=38901&version=latest`  
+  Example: `curl "http://localhost:8010/v2/specs/resolve?spec_number=38901&version=latest"`
+- TOC: `GET /specs/{spec_id}/toc` — Optional `depth` and `section_id` filters.  
+  Example: `curl "http://localhost:8010/specs/38901-j10/toc?depth=3"`
+- Grep: `GET /specs/{spec_id}/grep?pattern=...&regex=bool` — Substring/regex search.  
+  Example: `curl "http://localhost:8010/specs/38901-j10/grep?pattern=beamforming&regex=false"`
 - `GET /health`, `GET /help` (tool metadata).
 
 ## FastMCP

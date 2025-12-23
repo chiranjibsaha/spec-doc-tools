@@ -85,8 +85,9 @@ def _build_server(config: MCPConfig) -> FastMCP:
         minor: int | None = None,
         patch: int | None = None,
         docs_dir: str | None = None,
+        persist: bool = False,
     ) -> dict:
-        return client.spec_version_resolve_get(
+        resp = client.spec_version_resolve_get(
             spec_number,
             version=version,
             major=major,
@@ -94,6 +95,15 @@ def _build_server(config: MCPConfig) -> FastMCP:
             patch=patch,
             docs_dir=docs_dir,
         )
+        rel_path = _rel_path(spec_number, "resolve.json")
+        base = {
+            "status": resp.get("status", "ok"),
+            "spec_number": spec_number,
+            "version": resp.get("version"),
+            "spec_id": resp.get("spec_id"),
+            "exists": resp.get("exists"),
+        }
+        return _persist_content(json.dumps(resp), rel_path, base, persist)
 
     @mcp.tool(description="Find a section by heading text (case-insensitive).")
     def spec_sections_by_heading_get(
