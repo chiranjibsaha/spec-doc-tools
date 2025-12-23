@@ -23,6 +23,7 @@ Path conventions:
 - Table: `tmp/spec_extracts/{spec_id}/tables/{table_id}.md`
 - TOC: `tmp/spec_extracts/{spec_id}/toc.json`
 - Grep results: `tmp/spec_extracts/{spec_id}/grep/{pattern_slug}.json`
+- Version resolver (spec_id + presence): `tmp/spec_extracts/{spec_number}/resolve.json`
 
 ## Agent prompt snippet (to maintain the write_to_files chain)
 Add this to your agent instructions so the MCP payloads are written locally instead of flooding the LLM:
