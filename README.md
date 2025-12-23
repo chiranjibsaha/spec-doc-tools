@@ -20,7 +20,8 @@ Specs directory is configured via `spec_config.json` (defaults to `./doc`), or o
 - Extract section: `spec-extract 38300-j00 4-7-2 --format md|text|html [--output path.md] [--out-dir dir] [--no-include-heading]`
 
 ## API (FastAPI)
-Run: `spec-api  # defaults to 0.0.0.0:8010`
+Run: `spec-api  # defaults to 0.0.0.0:8010`  
+Set the specs root via `--docs-dir /path/to/specs`, or export `SPEC_DOCS_DIR`. When installed site-wide, you can also point to a config file with `SPEC_CONFIG_PATH=/path/to/spec_config.json`.
 
 Endpoints (+ curl examples):
 - Sections v2: `GET /v2/specs/{spec_id}/sections/{section_id}` — Markdown + images, chunked.  
