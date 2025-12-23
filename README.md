@@ -38,6 +38,36 @@ Endpoints (+ curl examples):
   Example: `curl "http://localhost:8010/specs/38901-j10/grep?pattern=beamforming&regex=false"`
 - `GET /health`, `GET /help` (tool metadata).
 
+Example v2 response (single chunk):
+```json
+{
+  "status": "ok",
+  "spec_id": "38901-j10",
+  "section_id": "4-7-2",
+  "html_id": "4-7-2-protocol-stacks",
+  "include_heading": true,
+  "markdown": {
+    "bytes": 8267,
+    "md": "### 4.7.2 ... full markdown ...",
+    "chunk_count": 1,
+    "chunk_size": 8267,
+    "chunks": [
+      {
+        "index": 1,
+        "bytes": 8267,
+        "md_snippet": "### 4.7.2 ... full markdown ...",
+        "images": []
+      }
+    ]
+  },
+  "images": [],
+  "source": {
+    "html_path": "/path/to/38901-j10.html",
+    "toc_path": "/path/to/38901-j10_toc.json"
+  }
+}
+```
+
 ## FastMCP
 Expose the same API as MCP tools:
 ```bash
