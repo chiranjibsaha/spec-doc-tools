@@ -30,8 +30,8 @@ Path conventions:
   Example: `curl "http://<api_host>:<port>/v2/specs/38901-j10/sections/4-7-2?chunk_size=1200"`
 - `spec_sections_by_heading_get` → `/specs/{spec_id}/sections/by-heading`  
   Example: `curl "http://<api_host>:<port>/specs/38901-j10/sections/by-heading?heading_text=Random%20access"`
-- `spec_tables_get` → `/specs/{spec_id}/tables/{table_id}`  
-  Example: `curl "http://<api_host>:<port>/specs/38901-j10/tables/Table5.4-1"`
+- `spec_tables_get` → `/specs/{spec_id}/tables/{table_id}` (table_id may be provided with or without the `Table` prefix)  
+  Example (no prefix): `curl "http://<api_host>:<port>/specs/38901-j10/tables/5.4-1"`
 - `spec_version_resolve_get` (supports `version=latest`) → `/v2/specs/resolve?spec_number=38901&version=latest`  
   Example: `curl "http://<api_host>:<port>/v2/specs/resolve?spec_number=38901&version=latest"`
 - `spec_toc_get` → `/specs/{spec_id}/toc`  

@@ -27,8 +27,8 @@ Endpoints (+ curl examples):
   Example: `curl "http://localhost:8010/v2/specs/38901-j10/sections/4-7-2?chunk_size=1200"`
 - Sections by heading: `GET /specs/{spec_id}/sections/by-heading?heading_text=...` — Case-insensitive heading match.  
   Example: `curl "http://localhost:8010/specs/38901-j10/sections/by-heading?heading_text=Random%20access"`
-- Tables: `GET /specs/{spec_id}/tables/{table_id}` — Table to Markdown with caption.  
-  Example: `curl "http://localhost:8010/specs/38901-j10/tables/Table5.4-1"`
+- Tables: `GET /specs/{spec_id}/tables/{table_id}` — Table to Markdown with caption. `table_id` can be passed with or without the `Table` prefix.  
+  Example (no prefix): `curl "http://localhost:8010/specs/38901-j10/tables/5.4-1"`
 - Version resolver (supports `version=latest` or `major/minor/patch`): `GET /v2/specs/resolve?spec_number=38901&version=latest`  
   Example: `curl "http://localhost:8010/v2/specs/resolve?spec_number=38901&version=latest"`
 - TOC: `GET /specs/{spec_id}/toc` — Optional `depth` and `section_id` filters.  
