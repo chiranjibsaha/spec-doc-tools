@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import re
+import base64
 from dataclasses import dataclass
 from html import unescape
 from pathlib import Path
@@ -53,6 +54,13 @@ def _coerce_doc_basename(doc: str | Path) -> str:
 def resolve_doc_paths(doc: str | Path, docs_dir: Path | None = None) -> tuple[Path, Path]:
     """Resolve the HTML and TOC JSON paths for a spec doc.
 
+    Layout (new):
+      docs_root/
+        {doc}/
+          {doc}.html
+          {doc}_toc.json
+          images/
+
     `doc` may be a basename like "38331-i60" or a path to the HTML/TOC JSON.
     """
 
@@ -66,15 +74,26 @@ def resolve_doc_paths(doc: str | Path, docs_dir: Path | None = None) -> tuple[Pa
         docs_root = docs_dir
     base = _coerce_doc_basename(doc)
 
-    html_path = Path(doc)
-    if html_path.suffix != ".html":
-        html_path = docs_root / f"{base}.html"
+    # Candidate paths (prefer nested layout, but gracefully fall back to flat files).
+    html_path_nested = docs_root / base / f"{base}.html"
+    html_path_flat = docs_root / f"{base}.html"
 
-    toc_path = Path(doc)
-    if toc_path.name.endswith("_toc.json"):
-        toc_path = toc_path
+    if str(doc).endswith(".html"):
+        html_path = Path(doc)
+    elif html_path_nested.exists():
+        html_path = html_path_nested
     else:
-        toc_path = docs_root / f"{base}_toc.json"
+        html_path = html_path_flat
+
+    toc_path_nested = docs_root / base / f"{base}_toc.json"
+    toc_path_flat = docs_root / f"{base}_toc.json"
+
+    if str(doc).endswith("_toc.json"):
+        toc_path = Path(doc)
+    elif toc_path_nested.exists():
+        toc_path = toc_path_nested
+    else:
+        toc_path = toc_path_flat
 
     return html_path, toc_path
 
@@ -533,6 +552,61 @@ def html_fragment_to_markdown(html_fragment: str) -> str:
         cleaned = cleaned.replace(placeholder, f"\n\n{md_table}\n\n")
 
     return cleaned.strip()
+
+
+def html_fragment_to_markdown_with_images(html_fragment: str, html_path: Path) -> tuple[str, list[dict]]:
+    """Convert HTML to markdown while preserving <img> tags and returning image payloads."""
+
+    cleaned = _SCRIPT_STYLE_RE.sub("", html_fragment)
+    soup = BeautifulSoup(cleaned, "html.parser")
+
+    images: list[dict] = []
+    for idx, img in enumerate(soup.find_all("img")):
+        src_raw = (img.get("src") or "").strip()
+        alt = (img.get("alt") or "").strip()
+        if not src_raw:
+            img.decompose()
+            continue
+
+        resolved_path = (html_path.parent / src_raw).resolve()
+        image_bytes: bytes | None = None
+        b64_data: str | None = None
+        size: int | None = None
+        svg_text: str | None = None
+        try:
+            if resolved_path.suffix.lower() == ".svg":
+                svg_text = resolved_path.read_text(encoding="utf-8")
+                size = len(svg_text.encode("utf-8"))
+            else:
+                image_bytes = resolved_path.read_bytes()
+                size = len(image_bytes)
+                b64_data = base64.b64encode(image_bytes).decode("ascii")
+        except FileNotFoundError:
+            image_bytes = None
+
+        images.append(
+            {
+                "index": idx + 1,
+                "src": src_raw,
+                "alt": alt,
+                "path": str(resolved_path),
+                "bytes": size,
+                "base64": b64_data,
+                "svg": svg_text,
+                "content_type": "image/svg+xml"
+                if resolved_path.suffix.lower() == ".svg"
+                else ("image/png" if resolved_path.suffix.lower() == ".png" else "application/octet-stream"),
+                "found": image_bytes is not None or svg_text is not None,
+            }
+        )
+
+        # Replace the tag with a markdown-friendly placeholder so the downstream
+        # markdown conversion keeps the image reference in place.
+        img.replace_with(NavigableString(f"![{alt}]({src_raw})"))
+
+    # Reuse the existing markdown converter now that images are represented as plain text.
+    markdown = html_fragment_to_markdown(str(soup))
+    return markdown, images
 
 
 def filter_toc_entries(
