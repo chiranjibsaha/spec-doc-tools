@@ -1,0 +1,54 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "qgenie/anthropic::claude-4-sonnet",
+  "small_model": "qgenie/anthropic::claude-3-7-sonnet",
+  "plugin": ["opencode-openai-codex-auth"],
+  // "enterprise": {
+  //   "url": "https://enterprise.dev.opencode.ai",
+  // },
+  "instructions": ["STYLE_GUIDE.md"],
+  "provider": {
+    "opencode": {
+      "options": {
+        // "baseURL": "http://localhost:8080",
+      },
+    },
+    "qgenie": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Qualcomm Genie",
+      "options": {
+        "baseURL": "https://qgenie-api.qualcomm.com/v1",
+        "apiKey": "9fcd4a6a-d3eb-4156-93cd-baa36085b842"
+      },
+      "models": {
+        "anthropic::claude-3-7-sonnet": { "name": "Claude 3.7 Sonnet" },
+        "anthropic::claude-4-5-sonnet": { "name": "Claude 4.5 Sonnet" },
+        "anthropic::claude-4-sonnet": { "name": "Claude 4 Sonnet" },
+        "vertexai::gemini-2.5-pro": { "name": "Gemini 2.5 Pro" }
+      }
+    },
+  },
+  "mcp": {
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+    },
+    "morph": {
+      "type": "local",
+      "command": ["bunx", "@morphllm/morphmcp"],
+      "environment": {
+        "ENABLED_TOOLS": "warp_grep",
+      },
+    },
+    "asntools": {
+        "url": "http://hermes-02.na.qualcomm.com:8765/mcp",
+        "type": "remote",
+        "enabled": true,
+    },
+    "speclookup": {
+        "url": "http://localhost:3120/mcp",
+        "type": "remote",
+        "enabled": true,
+    },
+  },
+}

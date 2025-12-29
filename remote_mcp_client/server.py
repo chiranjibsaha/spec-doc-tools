@@ -72,8 +72,7 @@ def _build_server(config: MCPConfig) -> FastMCP:
             "html_id": resp.get("html_id"),
             "include_heading": include_heading,
             "bytes": len(md.encode("utf-8")),
-            "chunk_count": resp.get("markdown", {}).get("chunk_count"),
-            "chunk_size": resp.get("markdown", {}).get("chunk_size"),
+            "md_snippet": md,
         }
         return _persist_content(md, rel_path, base, persist)
 

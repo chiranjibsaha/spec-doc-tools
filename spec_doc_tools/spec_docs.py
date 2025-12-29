@@ -57,7 +57,7 @@ def resolve_doc_paths(doc: str | Path, docs_dir: Path | None = None) -> tuple[Pa
     Layout (new):
       docs_root/
         {doc}/
-          {doc}.html
+          {doc}.html  (or image_corrected_{doc}.html if present)
           {doc}_toc.json
           images/
 
@@ -76,10 +76,13 @@ def resolve_doc_paths(doc: str | Path, docs_dir: Path | None = None) -> tuple[Pa
 
     # Candidate paths (prefer nested layout, but gracefully fall back to flat files).
     html_path_nested = docs_root / base / f"{base}.html"
+    corrected_html_path_nested = docs_root / base / f"image_corrected_{base}.html"
     html_path_flat = docs_root / f"{base}.html"
 
     if str(doc).endswith(".html"):
         html_path = Path(doc)
+    elif corrected_html_path_nested.exists():
+        html_path = corrected_html_path_nested
     elif html_path_nested.exists():
         html_path = html_path_nested
     else:

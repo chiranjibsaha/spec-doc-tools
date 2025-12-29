@@ -32,8 +32,12 @@ Endpoints (+ curl examples):
   Example (no prefix): `curl "http://localhost:8010/specs/38901-j10/tables/5.4-1"`
 - Version resolver (supports `version=latest` or `major/minor/patch`): `GET /v2/specs/resolve?spec_number=38901&version=latest`  
   Example: `curl "http://localhost:8010/v2/specs/resolve?spec_number=38901&version=latest"`
-- TOC: `GET /specs/{spec_id}/toc` — Optional `depth` and `section_id` filters.  
-  Example: `curl "http://localhost:8010/specs/38901-j10/toc?depth=3"`
+- TOC: `GET /specs/{spec_id}/toc` — Optional `depth`, `section_id`, and `section_ref` filters.  
+  - `section_id`: clause/html prefix filter (e.g. `4.7` or `4-7`).  
+  - `section_ref`: full heading id to resolve and return the section body text (heading excluded).  
+  Examples:  
+  - `curl "http://localhost:8010/specs/38901-j10/toc?depth=3"`  
+  - `curl "http://localhost:8010/specs/38901-j10/toc?section_ref=7-4-3-1-o2i-building-penetration-loss"` -> includes `html_id` and `section_text` for that heading.
 - Grep: `GET /specs/{spec_id}/grep?pattern=...&regex=bool` — Substring/regex search.  
   Example: `curl "http://localhost:8010/specs/38901-j10/grep?pattern=beamforming&regex=false"`
 - `GET /health`, `GET /help` (tool metadata).
@@ -77,7 +81,7 @@ Tools (operation ids): `spec_sections_get`, `spec_sections_by_heading_get`, `spe
 
 ## Files expected
 New layout (per spec id under docs root). Example for `spec_id = 38901-j10`:
-- HTML: `docs/38901-j10/38901-j10.html`
+- HTML: `docs/38901-j10/38901-j10.html` (if present, `docs/38901-j10/image_corrected_38901-j10.html` is preferred automatically)
 - TOC JSON: `docs/38901-j10/38901-j10_toc.json`
 - Images: `docs/38901-j10/images/`
 

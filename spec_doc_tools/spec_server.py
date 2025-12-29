@@ -18,6 +18,7 @@ from .spec_docs import (
     extract_table_html,
     filter_toc_entries,
     html_fragment_to_markdown,
+    html_fragment_to_text,
     html_fragment_to_markdown_with_images,
     load_toc_entries,
     load_toc_json,
@@ -457,13 +458,17 @@ def get_toc(
         None,
         description="Optional clause/html id prefix filter, e.g. '2.2.1' or '2-2-1'.",
     ),
+    section_ref: Optional[str] = Query(
+        None,
+        description="Optional full heading id; when provided, also return the section text under that heading.",
+    ),
     docs_dir: Optional[str] = Query(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
 ) -> dict:
     try:
-        _, toc_path = _resolve_paths(spec_id, docs_dir)
+        html_path, toc_path = _resolve_paths(spec_id, docs_dir)
         toc_json = load_toc_json(toc_path)
         entries = load_toc_entries(toc_json)
         items = filter_toc_entries(
@@ -471,6 +476,12 @@ def get_toc(
             prefix=section_id,
             max_depth=(depth - 1) if depth is not None else None,
         )
+        section_text: str | None = None
+        section_html_id: str | None = None
+        if section_ref:
+            section_html_id = resolve_section_html_id(entries, section_ref)
+            fragment = extract_section_html(html_path, section_html_id, include_heading=False)
+            section_text = html_fragment_to_text(fragment)
     except SpecDocError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -490,6 +501,9 @@ def get_toc(
         "depth_limit": depth,
         "section_filter": section_id,
         "toc": toc_items,
+        "section_ref": section_ref,
+        "html_id": section_html_id,
+        "section_text": section_text,
         "source": {"toc_path": str(toc_path)},
     }
 
