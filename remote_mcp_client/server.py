@@ -50,7 +50,7 @@ def _build_server(config: MCPConfig) -> FastMCP:
     @mcp.tool(description="Extract a section with chunking and embedded images (stored locally when persist=true).")
     def spec_section_get(
         spec_id: str,
-        section_id: str,
+        section_ref: str,
         include_heading: bool = True,
         chunk_size: int | None = None,
         docs_dir: str | None = None,
@@ -58,17 +58,17 @@ def _build_server(config: MCPConfig) -> FastMCP:
     ) -> dict:
         resp = client.spec_sections_v2_get(
             spec_id=spec_id,
-            section_id=section_id,
+            section_ref=section_ref,
             include_heading=include_heading,
             chunk_size=chunk_size,
             docs_dir=docs_dir,
         )
         md = resp.get("markdown", {}).get("md", "")
-        rel_path = _rel_path(spec_id, "sections", f"{section_id}.md")
+        rel_path = _rel_path(spec_id, "sections", f"{section_ref}.md")
         base = {
             "status": resp.get("status", "ok"),
             "spec_id": spec_id,
-            "section_id": section_id,
+            "section_ref": section_ref,
             "html_id": resp.get("html_id"),
             "include_heading": include_heading,
             "bytes": len(md.encode("utf-8")),

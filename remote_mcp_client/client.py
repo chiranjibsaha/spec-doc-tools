@@ -41,14 +41,14 @@ class RemoteSpecApiClient:
     def spec_sections_v2_get(
         self,
         spec_id: str,
-        section_id: str,
+        section_ref: str,
         include_heading: bool = True,
         chunk_size: int | None = None,
         docs_dir: str | None = None,
     ) -> dict:
         return self._request(
             "GET",
-            f"/v2/specs/{spec_id}/sections/{section_id}",
+            f"/v2/specs/{spec_id}/sections/{section_ref}",
             params={
                 "include_heading": include_heading,
                 "chunk_size": chunk_size,

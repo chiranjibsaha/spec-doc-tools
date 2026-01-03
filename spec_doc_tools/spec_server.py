@@ -98,7 +98,7 @@ class SectionV2Response(BaseModel):
 
     status: str
     spec_id: str
-    section_id: str
+    section_ref: str
     html_id: str
     include_heading: bool
     markdown: MarkdownPayloadV2
@@ -214,33 +214,12 @@ class HelpResponse(BaseModel):
 
 HELP_ENTRIES = [
     {
-        "name": "spec_sections_get",
-        "method": "GET",
-        "path": "/specs/{spec_id}/sections/{section_id}",
-        "description": "Extract a section as markdown.",
-        "request": {
-            "path": {"spec_id": "str", "section_id": "str"},
-            "query": {
-                "include_heading": "bool (default true)",
-                "docs_dir": "Optional[str]",
-            },
-        },
-        "response": {
-            "status": "ok",
-            "spec_id": "str",
-            "section_id": "str",
-            "html_id": "str",
-            "markdown": "dict(bytes, md)",
-            "source": "dict(html_path, toc_path)",
-        },
-    },
-    {
         "name": "spec_sections_v2_get",
         "method": "GET",
-        "path": "/v2/specs/{spec_id}/sections/{section_id}",
+        "path": "/v2/specs/{spec_id}/sections/{section_ref}",
         "description": "Extract a section with embedded images (no chunking).",
         "request": {
-            "path": {"spec_id": "str", "section_id": "str"},
+            "path": {"spec_id": "str", "section_ref": "str"},
             "query": {
                 "include_heading": "bool (default true)",
                 "chunk_size": "int (unused; kept for backward compatibility)",
@@ -250,7 +229,7 @@ HELP_ENTRIES = [
         "response": {
             "status": "ok",
             "spec_id": "str",
-            "section_id": "str",
+            "section_ref": "str",
             "html_id": "str",
             "markdown": "dict(bytes, md, chunk_count, chunk_size, chunks[*])",
             "images": "List[dict(index,src,alt,path,bytes,base64,content_type,found)]",
@@ -630,6 +609,20 @@ def _resolve_paths(spec_id: str, docs_dir: Optional[str]) -> tuple[Path, Path]:
     return resolve_doc_paths(spec_id, docs_dir=docs_path)
 
 
+@app.get(
+    "/specs/{spec_id}/sections/{section_id}",
+    operation_id="spec_sections_get",
+    include_in_schema=False,
+)
+def section_v1_disabled(spec_id: str, section_id: str) -> dict:
+    """Deprecated v1 endpoint; advise clients to use v2 with section_ref."""
+
+    raise HTTPException(
+        status_code=410,
+        detail={"message": "This endpoint is discontinued. Use /v2/specs/{spec_id}/sections/{section_ref}."},
+    )
+
+
 @app.get("/specs/{spec_id}/toc", operation_id="spec_toc_get", response_model=TOCResponse)
 def get_toc(
     spec_id: str,
@@ -735,53 +728,13 @@ def grep_spec(
 
 
 @app.get(
-    "/specs/{spec_id}/sections/{section_id}",
-    operation_id="spec_sections_get",
-    response_model=SectionResponse,
-)
-def get_section(
-    spec_id: str,
-    section_id: str,
-    include_heading: bool = Query(True, description="Include the heading tag in the extraction."),
-    docs_dir: Optional[str] = Query(
-        None,
-        description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
-    ),
-) -> SectionResponse:
-    """Extract a section as Markdown."""
-
-    try:
-        html_path, toc_path = _resolve_paths(spec_id, docs_dir)
-        toc_json = load_toc_json(toc_path)
-        entries = load_toc_entries(toc_json)
-        section_html_id = resolve_section_html_id(entries, section_id)
-        fragment = extract_section_html(html_path, section_html_id, include_heading=include_heading)
-        markdown = html_fragment_to_markdown(fragment)
-        payload = _build_markdown(markdown)
-    except SpecDocError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    return {
-        "status": "ok",
-        "spec_id": spec_id,
-        "section_id": section_id,
-        "html_id": section_html_id,
-        "include_heading": include_heading,
-        "markdown": payload,
-        "source": {"html_path": str(html_path), "toc_path": str(toc_path)},
-    }
-
-
-@app.get(
-    "/v2/specs/{spec_id}/sections/{section_id}",
+    "/v2/specs/{spec_id}/sections/{section_ref}",
     operation_id="spec_sections_v2_get",
     response_model=SectionV2Response,
 )
 def get_section_v2(
     spec_id: str,
-    section_id: str,
+    section_ref: str,
     include_heading: bool = Query(True, description="Include the heading tag in the extraction."),
     chunk_size: int = Query(
         1200,
@@ -799,7 +752,7 @@ def get_section_v2(
         html_path, toc_path = _resolve_paths(spec_id, docs_dir)
         toc_json = load_toc_json(toc_path)
         entries = load_toc_entries(toc_json)
-        section_html_id = resolve_section_html_id(entries, section_id)
+        section_html_id = resolve_section_html_id(entries, section_ref)
         fragment = extract_section_html(html_path, section_html_id, include_heading=include_heading)
         markdown, images = html_fragment_to_markdown_with_images(fragment, html_path)
         payload = {
@@ -824,7 +777,7 @@ def get_section_v2(
     return {
         "status": "ok",
         "spec_id": spec_id,
-        "section_id": section_id,
+        "section_ref": section_ref,
         "html_id": section_html_id,
         "include_heading": include_heading,
         "markdown": payload,

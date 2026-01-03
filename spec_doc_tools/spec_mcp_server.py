@@ -12,7 +12,7 @@ from .spec_server import app as fastapi_app
 
 INSTRUCTIONS = """MCP interface for spec_doc_tools (sections/tables/toc/grep over spec HTML).
 Use:
-- spec_sections_get: extract a section by id as markdown with chunk metadata.
+- spec_sections_get: (deprecated) disabled; use spec_sections_v2_get instead.
 - spec_sections_by_heading_get: extract a section by matching heading text.
 - spec_tables_get: extract a table by caption/id to markdown.
 - spec_toc_get: fetch the TOC tree (optional depth) and optionally return text for a specific section_ref.
@@ -20,7 +20,6 @@ Use:
 Read the `spec_doc_tools` help docs or call the `spec_help` resource for details."""
 
 OPERATION_NAME_MAP = {
-    "spec_sections_get": "spec_sections_get",
     "spec_sections_v2_get": "spec_sections_v2_get",
     "spec_version_resolve_get": "spec_version_resolve_get",
     "spec_sections_by_heading_get": "spec_sections_by_heading_get",
