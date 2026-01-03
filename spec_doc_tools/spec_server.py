@@ -31,7 +31,7 @@ from .spec_config import load_spec_config
 
 DEFAULT_SPEC_API_PORT = 8010
 
-app = FastAPI(title="asntools-spec-api", version=__version__)
+app = FastAPI(title="spec-lookup-api", version=__version__)
 
 
 class SourceInfo(BaseModel):
