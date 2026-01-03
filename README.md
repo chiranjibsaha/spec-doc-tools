@@ -21,6 +21,8 @@ Specs directory is configured via `spec_config.json` (defaults to `./doc`), or o
 
 ## API (FastAPI)
 Run: `spec-api  # defaults to 0.0.0.0:8010`  
+- Change port: `spec-api --port 9000`  
+- Change host: `spec-api --host 127.0.0.1`  
 Set the specs root via `--docs-dir /path/to/specs`, or export `SPEC_DOCS_DIR`. When installed site-wide, you can also point to a config file with `SPEC_CONFIG_PATH=/path/to/spec_config.json`.
 
 Endpoints (+ curl examples):
