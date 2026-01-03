@@ -14,8 +14,8 @@ INSTRUCTIONS = """MCP interface for spec_doc_tools (sections/tables/toc/grep ove
 Use:
 - spec_sections_get: extract a section by id as markdown with chunk metadata.
 - spec_sections_by_heading_get: extract a section by matching heading text.
-- spec_tables_get: extract a table by caption/id to markdown with chunking.
-- spec_toc_get: fetch the TOC tree with optional depth/section filter.
+- spec_tables_get: extract a table by caption/id to markdown.
+- spec_toc_get: fetch the TOC tree (optional depth) and optionally return text for a specific section_ref.
 - spec_grep_get: search spec HTML with substring or regex, returning match metadata.
 Read the `spec_doc_tools` help docs or call the `spec_help` resource for details."""
 
