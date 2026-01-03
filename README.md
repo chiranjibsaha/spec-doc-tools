@@ -32,8 +32,7 @@ Endpoints (+ curl examples):
   Example (no prefix): `curl "http://localhost:8010/specs/38901-j10/tables/5.4-1"`
 - Version resolver (supports `version=latest` or `major/minor/patch`): `GET /v2/specs/resolve?spec_number=38901&version=latest`  
   Example: `curl "http://localhost:8010/v2/specs/resolve?spec_number=38901&version=latest"`
-- TOC: `GET /specs/{spec_id}/toc` — Optional `depth`, `section_id`, and `section_ref` filters.  
-  - `section_id`: clause/html prefix filter (e.g. `4.7` or `4-7`).  
+- TOC: `GET /specs/{spec_id}/toc` — Optional `depth` and `section_ref` filters.  
   - `section_ref`: full heading id to resolve and return the section body text (heading excluded).  
   Examples:  
   - `curl "http://localhost:8010/specs/38901-j10/toc?depth=3"`  

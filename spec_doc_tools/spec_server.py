@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
 import difflib
 import re
 from pathlib import Path
-import argparse
 from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, Query
+from pydantic import BaseModel, ConfigDict
 
 from . import __version__
 from .spec_docs import (
@@ -31,6 +32,185 @@ from .spec_config import load_spec_config
 DEFAULT_SPEC_API_PORT = 8010
 
 app = FastAPI(title="asntools-spec-api", version=__version__)
+
+
+class SourceInfo(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    html_path: Optional[str] = None
+    toc_path: Optional[str] = None
+
+
+class ImagePayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    index: int
+    src: str
+    alt: str
+    path: str
+    bytes: Optional[int] = None
+    base64: Optional[str] = None
+    svg: Optional[str] = None
+    content_type: str
+    found: bool
+
+
+class MarkdownPayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    bytes: int
+    md: str
+
+
+class MarkdownChunk(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    index: int
+    bytes: int
+    md_snippet: str
+    images: list[ImagePayload] = []
+
+
+class MarkdownPayloadV2(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    bytes: int
+    md: str
+    chunk_count: int
+    chunk_size: int
+    chunks: list[MarkdownChunk]
+
+
+class SectionResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    spec_id: str
+    section_id: str
+    html_id: str
+    include_heading: bool
+    markdown: MarkdownPayload
+    source: SourceInfo
+
+
+class SectionV2Response(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    spec_id: str
+    section_id: str
+    html_id: str
+    include_heading: bool
+    markdown: MarkdownPayloadV2
+    images: list[ImagePayload]
+    source: SourceInfo
+
+
+class SectionByHeadingResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    spec_id: str
+    section_heading: str
+    html_id: str
+    include_heading: bool
+    markdown: MarkdownPayload
+    source: SourceInfo
+
+
+class TOCItem(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    depth: int
+    clause_id: Optional[str]
+    clause_title: str
+    level: int
+    id: str
+
+
+class TOCResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    spec_id: str
+    depth_limit: Optional[int]
+    toc: list[TOCItem]
+    section_ref: Optional[str] = None
+    html_id: Optional[str] = None
+    section_text: Optional[str] = None
+    source: SourceInfo
+
+
+class TableResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    spec_id: str
+    table_id: str
+    caption: str
+    markdown: MarkdownPayload
+    source: SourceInfo
+    html: str
+
+
+class GrepMatch(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    index: int
+    line: int
+    char_offset: int
+    message_length: int
+    message: str
+    clause_id: Optional[str] = None
+
+
+class GrepResult(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    spec_id: str
+    query: str
+    match_count: int
+    matches: list[GrepMatch]
+    chunks: list[str]
+    source: SourceInfo
+
+
+class VersionPaths(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    folder: str
+    html: str
+    toc: str
+
+
+class VersionExists(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    folder: bool
+    html: bool
+    toc: bool
+
+
+class VersionResolveResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    spec_number: str
+    version: str
+    spec_id: str
+    paths: VersionPaths
+    exists: VersionExists
+
+
+class HealthResponse(BaseModel):
+    status: str
+
+
+class HelpResponse(BaseModel):
+    tools: list[dict]
+    status: str
+
 
 HELP_ENTRIES = [
     {
@@ -146,12 +326,12 @@ HELP_ENTRIES = [
         "name": "spec_toc_get",
         "method": "GET",
         "path": "/specs/{spec_id}/toc",
-        "description": "Return TOC entries with optional depth/section filters.",
+        "description": "Return TOC entries with optional depth filter; section_ref returns body text for that heading.",
         "request": {
             "query": {
                 "spec_id": "str",
                 "depth": "int?",
-                "section_id": "str?",
+                "section_ref": "str?",
                 "docs_dir": "Optional[str]",
             }
         },
@@ -398,7 +578,11 @@ def _find_heading_by_title(entries, heading_text: str):
     return None
 
 
-@app.get("/specs/{spec_id}/sections/by-heading", operation_id="spec_sections_by_heading_get")
+@app.get(
+    "/specs/{spec_id}/sections/by-heading",
+    operation_id="spec_sections_by_heading_get",
+    response_model=SectionByHeadingResponse,
+)
 def get_section_by_heading(
     spec_id: str,
     heading_text: str = Query(..., description="Heading text to match (case-insensitive)."),
@@ -407,7 +591,7 @@ def get_section_by_heading(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> dict:
+) -> SectionByHeadingResponse:
     """Find a section by heading text and return it as markdown."""
     try:
         html_path, toc_path = _resolve_paths(spec_id, docs_dir)
@@ -446,7 +630,7 @@ def _resolve_paths(spec_id: str, docs_dir: Optional[str]) -> tuple[Path, Path]:
     return resolve_doc_paths(spec_id, docs_dir=docs_path)
 
 
-@app.get("/specs/{spec_id}/toc", operation_id="spec_toc_get")
+@app.get("/specs/{spec_id}/toc", operation_id="spec_toc_get", response_model=TOCResponse)
 def get_toc(
     spec_id: str,
     depth: Optional[int] = Query(
@@ -454,26 +638,21 @@ def get_toc(
         ge=1,
         description="Limit to this heading depth (1=top level). Applies to tree depth in the TOC.",
     ),
-    section_id: Optional[str] = Query(
-        None,
-        description="Optional clause/html id prefix filter, e.g. '2.2.1' or '2-2-1'.",
-    ),
     section_ref: Optional[str] = Query(
         None,
-        description="Optional full heading id; when provided, also return the section text under that heading.",
+        description="Full heading id; when provided, also return the section text under that heading.",
     ),
     docs_dir: Optional[str] = Query(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> dict:
+) -> TOCResponse:
     try:
         html_path, toc_path = _resolve_paths(spec_id, docs_dir)
         toc_json = load_toc_json(toc_path)
         entries = load_toc_entries(toc_json)
         items = filter_toc_entries(
             entries,
-            prefix=section_id,
             max_depth=(depth - 1) if depth is not None else None,
         )
         section_text: str | None = None
@@ -499,7 +678,6 @@ def get_toc(
         "status": "ok",
         "spec_id": spec_id,
         "depth_limit": depth,
-        "section_filter": section_id,
         "toc": toc_items,
         "section_ref": section_ref,
         "html_id": section_html_id,
@@ -509,16 +687,20 @@ def get_toc(
 
 
 @app.get("/health", operation_id="spec_health_get")
-def health() -> dict:
+def health() -> HealthResponse:
     return {"status": "ok"}
 
 
-@app.get("/help", operation_id="spec_help_get")
-def help_endpoint() -> dict:
+@app.get("/help", operation_id="spec_help_get", response_model=HelpResponse)
+def help_endpoint() -> HelpResponse:
     return {"status": "ok", "tools": HELP_ENTRIES}
 
 
-@app.get("/specs/{spec_id}/grep", operation_id="spec_grep_get")
+@app.get(
+    "/specs/{spec_id}/grep",
+    operation_id="spec_grep_get",
+    response_model=GrepResult,
+)
 def grep_spec(
     spec_id: str,
     pattern: str = Query(..., min_length=1, description="Substring to search (case-insensitive)."),
@@ -529,7 +711,7 @@ def grep_spec(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> dict:
+) -> GrepResult:
     """Search a spec HTML document for a substring and return structured matches."""
 
     try:
@@ -552,7 +734,11 @@ def grep_spec(
     return payload
 
 
-@app.get("/specs/{spec_id}/sections/{section_id}", operation_id="spec_sections_get")
+@app.get(
+    "/specs/{spec_id}/sections/{section_id}",
+    operation_id="spec_sections_get",
+    response_model=SectionResponse,
+)
 def get_section(
     spec_id: str,
     section_id: str,
@@ -561,7 +747,7 @@ def get_section(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> dict:
+) -> SectionResponse:
     """Extract a section as Markdown."""
 
     try:
@@ -588,7 +774,11 @@ def get_section(
     }
 
 
-@app.get("/v2/specs/{spec_id}/sections/{section_id}", operation_id="spec_sections_v2_get")
+@app.get(
+    "/v2/specs/{spec_id}/sections/{section_id}",
+    operation_id="spec_sections_v2_get",
+    response_model=SectionV2Response,
+)
 def get_section_v2(
     spec_id: str,
     section_id: str,
@@ -602,7 +792,7 @@ def get_section_v2(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> dict:
+) -> SectionV2Response:
     """Extract a section as Markdown with embedded images (base64)."""
 
     try:
@@ -643,7 +833,11 @@ def get_section_v2(
     }
 
 
-@app.get("/v2/specs/resolve", operation_id="spec_version_resolve_get")
+@app.get(
+    "/v2/specs/resolve",
+    operation_id="spec_version_resolve_get",
+    response_model=VersionResolveResponse,
+)
 def resolve_spec_version(
     spec_number: str = Query(..., description="Base spec number, e.g. 38901"),
     version: Optional[str] = Query(None, description="Full version string, e.g. 19.1.0 or 'latest'"),
@@ -654,7 +848,7 @@ def resolve_spec_version(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> dict:
+) -> VersionResolveResponse:
     """Build spec_id from spec number + version, and report file/folder presence."""
 
     spec_number = spec_number.strip()
@@ -707,7 +901,11 @@ def resolve_spec_version(
     }
 
 
-@app.get("/specs/{spec_id}/tables/{table_id}", operation_id="spec_tables_get")
+@app.get(
+    "/specs/{spec_id}/tables/{table_id}",
+    operation_id="spec_tables_get",
+    response_model=TableResponse,
+)
 def get_table(
     spec_id: str,
     table_id: str,
@@ -715,7 +913,7 @@ def get_table(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> dict:
+) -> TableResponse:
     """Extract a specific table as structured Markdown."""
 
     try:

@@ -106,7 +106,6 @@ class RemoteSpecApiClient:
         self,
         spec_id: str,
         depth: int | None = None,
-        section_id: str | None = None,
         docs_dir: str | None = None,
     ) -> dict:
         return self._request(
@@ -114,7 +113,6 @@ class RemoteSpecApiClient:
             f"/specs/{spec_id}/toc",
             params={
                 "depth": depth,
-                "section_id": section_id,
                 "docs_dir": docs_dir,
             },
         )

@@ -149,18 +149,16 @@ def _build_server(config: MCPConfig) -> FastMCP:
     def spec_toc_get(
         spec_id: str,
         depth: int | None = None,
-        section_id: str | None = None,
         docs_dir: str | None = None,
         persist: bool = False,
     ) -> dict:
-        resp = client.spec_toc_get(spec_id, depth=depth, section_id=section_id, docs_dir=docs_dir)
+        resp = client.spec_toc_get(spec_id, depth=depth, docs_dir=docs_dir)
         rel_path = _rel_path(spec_id, "toc.json")
         content = resp
         base = {
             "status": resp.get("status", "ok"),
             "spec_id": spec_id,
             "depth_limit": depth,
-            "section_filter": section_id,
             "items": len(resp.get("toc", []) or []),
         }
         return _persist_content(json.dumps(content), rel_path, base, persist)
