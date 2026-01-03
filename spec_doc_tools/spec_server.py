@@ -296,28 +296,6 @@ HELP_ENTRIES = [
         },
     },
     {
-        "name": "spec_sections_by_heading_get",
-        "method": "GET",
-        "path": "/specs/{spec_id}/sections/by-heading",
-        "description": "Find a section by heading text (case-insensitive) and return markdown.",
-        "request": {
-            "query": {
-                "spec_id": "str",
-                "heading_text": "str",
-                "include_heading": "bool",
-                "docs_dir": "Optional[str]",
-            }
-        },
-        "response": {
-            "status": "ok",
-            "spec_id": "str",
-            "section_heading": "str",
-            "html_id": "str",
-            "markdown": "dict",
-            "source": "dict(html_path, toc_path)",
-        },
-    },
-    {
         "name": "spec_tables_get",
         "method": "GET",
         "path": "/specs/{spec_id}/tables/{table_id}",
@@ -590,53 +568,6 @@ def _find_heading_by_title(entries, heading_text: str):
         candidates.sort(key=lambda e: (len(e.clause_title), len(e.html_id)))
         return candidates[0]
     return None
-
-
-@app.get(
-    "/specs/{spec_id}/sections/by-heading",
-    operation_id="spec_sections_by_heading_get",
-    response_model=SectionByHeadingResponse,
-)
-def get_section_by_heading(
-    spec_id: str,
-    heading_text: str = Query(..., description="Heading text to match (case-insensitive)."),
-    include_heading: bool = Query(True, description="Include the heading tag in the extraction."),
-    docs_dir: Optional[str] = Query(
-        None,
-        description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
-    ),
-) -> SectionByHeadingResponse:
-    """Find a section by heading text and return it as markdown."""
-    try:
-        html_path, toc_path = _resolve_paths(spec_id, docs_dir)
-        toc_json = load_toc_json(toc_path)
-        entries = load_toc_entries(toc_json)
-        entry = _find_heading_by_title(entries, heading_text)
-        if not entry:
-            titles = [e.clause_title for _, e in filter_toc_entries(entries, search=None)]
-            suggestions = difflib.get_close_matches(heading_text, titles, n=5, cutoff=0.4)
-            raise HTTPException(
-                status_code=404,
-                detail={"message": f"Heading not found: {heading_text}", "suggestions": suggestions},
-            )
-        section_html_id = entry.html_id
-        fragment = extract_section_html(html_path, section_html_id, include_heading=include_heading)
-        markdown = html_fragment_to_markdown(fragment)
-        payload = _build_markdown(markdown)
-    except SpecDocError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
-    except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    return {
-        "status": "ok",
-        "spec_id": spec_id,
-        "section_heading": heading_text,
-        "html_id": section_html_id,
-        "include_heading": include_heading,
-        "markdown": payload,
-        "source": {"html_path": str(html_path), "toc_path": str(toc_path)},
-    }
 
 
 def _resolve_paths(spec_id: str, docs_dir: Optional[str]) -> tuple[Path, Path]:

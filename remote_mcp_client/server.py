@@ -127,33 +127,6 @@ def _build_server(config: MCPConfig) -> FastMCP:
         }
         return _persist_content(json.dumps(resp), rel_path, base, persist)
 
-    @mcp.tool(description="Find a section by heading text (case-insensitive).")
-    def spec_sections_by_heading_get(
-        spec_id: str,
-        heading_text: str,
-        include_heading: bool = True,
-        docs_dir: str | None = None,
-        persist: bool = False,
-    ) -> dict:
-        resp = client.spec_sections_by_heading_get(
-            spec_id,
-            heading_text,
-            include_heading=include_heading,
-            docs_dir=docs_dir,
-        )
-        md = resp.get("markdown", {}).get("md", "")
-        filename = f"{_slug(heading_text)}.md"
-        rel_path = _rel_path(spec_id, "sections", filename)
-        base = {
-            "status": resp.get("status", "ok"),
-            "spec_id": spec_id,
-            "section_heading": heading_text,
-            "html_id": resp.get("html_id"),
-            "include_heading": include_heading,
-            "bytes": len(md.encode("utf-8")),
-        }
-        return _persist_content(md, rel_path, base, persist)
-
     @mcp.tool(description="Extract a table to markdown with caption.")
     def spec_tables_get(spec_id: str, table_id: str, docs_dir: str | None = None, persist: bool = False) -> dict:
         resp = client.spec_tables_get(spec_id, table_id, docs_dir=docs_dir)

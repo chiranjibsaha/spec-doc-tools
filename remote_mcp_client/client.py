@@ -94,23 +94,6 @@ class RemoteSpecApiClient:
             },
         )
 
-    def spec_sections_by_heading_get(
-        self,
-        spec_id: str,
-        heading_text: str,
-        include_heading: bool = True,
-        docs_dir: str | None = None,
-    ) -> dict:
-        return self._request(
-            "GET",
-            f"/specs/{spec_id}/sections/by-heading",
-            params={
-                "heading_text": heading_text,
-                "include_heading": include_heading,
-                "docs_dir": docs_dir,
-            },
-        )
-
     def spec_tables_get(self, spec_id: str, table_id: str, docs_dir: str | None = None) -> dict:
         return self._request(
             "GET",
