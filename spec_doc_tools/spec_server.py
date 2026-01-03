@@ -106,6 +106,19 @@ class SectionV2Response(BaseModel):
     source: SourceInfo
 
 
+class SectionSummaryResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    spec_id: str
+    section_ref: str
+    html_id: str
+    include_heading: bool
+    chars: int
+    bytes: int
+    source: SourceInfo
+
+
 class SectionByHeadingResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -233,6 +246,28 @@ HELP_ENTRIES = [
             "html_id": "str",
             "markdown": "dict(bytes, md, chunk_count, chunk_size, chunks[*])",
             "images": "List[dict(index,src,alt,path,bytes,base64,content_type,found)]",
+            "source": "dict(html_path, toc_path)",
+        },
+    },
+    {
+        "name": "spec_sections_summary_get",
+        "method": "GET",
+        "path": "/v2/specs/{spec_id}/sections/{section_ref}/summary",
+        "description": "Return size metadata for a section without returning the body.",
+        "request": {
+            "path": {"spec_id": "str", "section_ref": "str"},
+            "query": {
+                "include_heading": "bool (default true)",
+                "docs_dir": "Optional[str]",
+            },
+        },
+        "response": {
+            "status": "ok",
+            "spec_id": "str",
+            "section_ref": "str",
+            "html_id": "str",
+            "chars": "int",
+            "bytes": "int",
             "source": "dict(html_path, toc_path)",
         },
     },
@@ -782,6 +817,48 @@ def get_section_v2(
         "include_heading": include_heading,
         "markdown": payload,
         "images": images,
+        "source": {"html_path": str(html_path), "toc_path": str(toc_path)},
+    }
+
+
+@app.get(
+    "/v2/specs/{spec_id}/sections/{section_ref}/summary",
+    operation_id="spec_sections_summary_get",
+    response_model=SectionSummaryResponse,
+)
+def get_section_summary(
+    spec_id: str,
+    section_ref: str,
+    include_heading: bool = Query(True, description="Include the heading tag in the extraction."),
+    docs_dir: Optional[str] = Query(
+        None,
+        description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
+    ),
+) -> SectionSummaryResponse:
+    """Return size-only metadata for a section."""
+
+    try:
+        html_path, toc_path = _resolve_paths(spec_id, docs_dir)
+        toc_json = load_toc_json(toc_path)
+        entries = load_toc_entries(toc_json)
+        section_html_id = resolve_section_html_id(entries, section_ref)
+        fragment = extract_section_html(html_path, section_html_id, include_heading=include_heading)
+        markdown = html_fragment_to_markdown(fragment)
+        chars = len(markdown)
+        bytes_len = len(markdown.encode("utf-8"))
+    except SpecDocError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return {
+        "status": "ok",
+        "spec_id": spec_id,
+        "section_ref": section_ref,
+        "html_id": section_html_id,
+        "include_heading": include_heading,
+        "chars": chars,
+        "bytes": bytes_len,
         "source": {"html_path": str(html_path), "toc_path": str(toc_path)},
     }
 

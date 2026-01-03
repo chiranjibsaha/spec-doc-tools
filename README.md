@@ -28,6 +28,8 @@ Set the specs root via `--docs-dir /path/to/specs`, or export `SPEC_DOCS_DIR`. W
 Endpoints (+ curl examples):
 - Sections v2: `GET /v2/specs/{spec_id}/sections/{section_ref}` — Markdown + images (single chunk; `chunk_size` is ignored).  
   Example: `curl "http://localhost:8010/v2/specs/38901-j10/sections/4-7-2"`
+- Section summary: `GET /v2/specs/{spec_id}/sections/{section_ref}/summary` — Returns `chars`/`bytes` only (no content).  
+  Example: `curl "http://localhost:8010/v2/specs/38901-j10/sections/4-7-2/summary"`
 - Sections by heading: `GET /specs/{spec_id}/sections/by-heading?heading_text=...` — Case-insensitive heading match.  
   Example: `curl "http://localhost:8010/specs/38901-j10/sections/by-heading?heading_text=Random%20access"`
 - Tables: `GET /specs/{spec_id}/tables/{table_id}` — Table to Markdown with caption. `table_id` can be passed with or without the `Table` prefix.  

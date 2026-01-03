@@ -76,6 +76,29 @@ def _build_server(config: MCPConfig) -> FastMCP:
         }
         return _persist_content(md, rel_path, base, persist)
 
+    @mcp.tool(description="Get size metadata for a section without returning content.")
+    def spec_sections_summary_get(
+        spec_id: str,
+        section_ref: str,
+        include_heading: bool = True,
+        docs_dir: str | None = None,
+    ) -> dict:
+        resp = client.spec_sections_summary_get(
+            spec_id=spec_id,
+            section_ref=section_ref,
+            include_heading=include_heading,
+            docs_dir=docs_dir,
+        )
+        return {
+            "status": resp.get("status", "ok"),
+            "spec_id": spec_id,
+            "section_ref": section_ref,
+            "html_id": resp.get("html_id"),
+            "include_heading": include_heading,
+            "chars": resp.get("chars"),
+            "bytes": resp.get("bytes"),
+        }
+
     @mcp.tool(description="Resolve spec number + version to spec_id and file presence.")
     def spec_version_resolve_get(
         spec_number: str,

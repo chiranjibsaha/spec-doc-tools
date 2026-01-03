@@ -56,6 +56,22 @@ class RemoteSpecApiClient:
             },
         )
 
+    def spec_sections_summary_get(
+        self,
+        spec_id: str,
+        section_ref: str,
+        include_heading: bool = True,
+        docs_dir: str | None = None,
+    ) -> dict:
+        return self._request(
+            "GET",
+            f"/v2/specs/{spec_id}/sections/{section_ref}/summary",
+            params={
+                "include_heading": include_heading,
+                "docs_dir": docs_dir,
+            },
+        )
+
     def spec_version_resolve_get(
         self,
         spec_number: str,
