@@ -6,9 +6,7 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.spec_version_resolve_get_response_spec_version_resolve_get import (
-    SpecVersionResolveGetResponseSpecVersionResolveGet,
-)
+from ...models.version_resolve_response import VersionResolveResponse
 from ...types import UNSET, Response, Unset
 
 
@@ -64,7 +62,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/v2/specs/resolve",
+        "url": "/v1/specs/resolve",
         "params": params,
     }
 
@@ -73,9 +71,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet | None:
+) -> HTTPValidationError | VersionResolveResponse | None:
     if response.status_code == 200:
-        response_200 = SpecVersionResolveGetResponseSpecVersionResolveGet.from_dict(response.json())
+        response_200 = VersionResolveResponse.from_dict(response.json())
 
         return response_200
 
@@ -92,7 +90,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet]:
+) -> Response[HTTPValidationError | VersionResolveResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -110,7 +108,7 @@ def sync_detailed(
     minor: int | None | Unset = UNSET,
     patch: int | None | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet]:
+) -> Response[HTTPValidationError | VersionResolveResponse]:
     """Resolve Spec Version
 
      Build spec_id from spec number + version, and report file/folder presence.
@@ -129,7 +127,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet]
+        Response[HTTPValidationError | VersionResolveResponse]
     """
 
     kwargs = _get_kwargs(
@@ -157,7 +155,7 @@ def sync(
     minor: int | None | Unset = UNSET,
     patch: int | None | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet | None:
+) -> HTTPValidationError | VersionResolveResponse | None:
     """Resolve Spec Version
 
      Build spec_id from spec number + version, and report file/folder presence.
@@ -176,7 +174,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet
+        HTTPValidationError | VersionResolveResponse
     """
 
     return sync_detailed(
@@ -199,7 +197,7 @@ async def asyncio_detailed(
     minor: int | None | Unset = UNSET,
     patch: int | None | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet]:
+) -> Response[HTTPValidationError | VersionResolveResponse]:
     """Resolve Spec Version
 
      Build spec_id from spec number + version, and report file/folder presence.
@@ -218,7 +216,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet]
+        Response[HTTPValidationError | VersionResolveResponse]
     """
 
     kwargs = _get_kwargs(
@@ -244,7 +242,7 @@ async def asyncio(
     minor: int | None | Unset = UNSET,
     patch: int | None | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet | None:
+) -> HTTPValidationError | VersionResolveResponse | None:
     """Resolve Spec Version
 
      Build spec_id from spec number + version, and report file/folder presence.
@@ -263,7 +261,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecVersionResolveGetResponseSpecVersionResolveGet
+        HTTPValidationError | VersionResolveResponse
     """
 
     return (

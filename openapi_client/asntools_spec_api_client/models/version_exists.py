@@ -6,28 +6,59 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="SpecVersionResolveGetResponseSpecVersionResolveGet")
+T = TypeVar("T", bound="VersionExists")
 
 
 @_attrs_define
-class SpecVersionResolveGetResponseSpecVersionResolveGet:
-    """ """
+class VersionExists:
+    """
+    Attributes:
+        folder (bool):
+        html (bool):
+        toc (bool):
+    """
 
+    folder: bool
+    html: bool
+    toc: bool
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        folder = self.folder
+
+        html = self.html
+
+        toc = self.toc
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
+        field_dict.update(
+            {
+                "folder": folder,
+                "html": html,
+                "toc": toc,
+            }
+        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        spec_version_resolve_get_response_spec_version_resolve_get = cls()
+        folder = d.pop("folder")
 
-        spec_version_resolve_get_response_spec_version_resolve_get.additional_properties = d
-        return spec_version_resolve_get_response_spec_version_resolve_get
+        html = d.pop("html")
+
+        toc = d.pop("toc")
+
+        version_exists = cls(
+            folder=folder,
+            html=html,
+            toc=toc,
+        )
+
+        version_exists.additional_properties = d
+        return version_exists
 
     @property
     def additional_keys(self) -> list[str]:

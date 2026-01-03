@@ -229,7 +229,7 @@ HELP_ENTRIES = [
     {
         "name": "spec_sections_v2_get",
         "method": "GET",
-        "path": "/v2/specs/{spec_id}/sections/{section_ref}",
+        "path": "/v1/specs/{spec_id}/sections/{section_ref}",
         "description": "Extract a section with embedded images (no chunking).",
         "request": {
             "path": {"spec_id": "str", "section_ref": "str"},
@@ -252,7 +252,7 @@ HELP_ENTRIES = [
     {
         "name": "spec_sections_summary_get",
         "method": "GET",
-        "path": "/v2/specs/{spec_id}/sections/{section_ref}/summary",
+        "path": "/v1/specs/{spec_id}/sections/{section_ref}/summary",
         "description": "Return size metadata for a section without returning the body.",
         "request": {
             "path": {"spec_id": "str", "section_ref": "str"},
@@ -274,7 +274,7 @@ HELP_ENTRIES = [
     {
         "name": "spec_version_resolve_get",
         "method": "GET",
-        "path": "/v2/specs/resolve",
+        "path": "/v1/specs/resolve",
         "description": "Build spec_id from spec number + version (string or major/minor/patch) and report presence of files.",
         "request": {
             "query": {
@@ -298,7 +298,7 @@ HELP_ENTRIES = [
     {
         "name": "spec_tables_get",
         "method": "GET",
-        "path": "/specs/{spec_id}/tables/{table_id}",
+        "path": "/v1/specs/{spec_id}/tables/{table_id}",
         "description": "Extract a table to markdown with caption.",
         "request": {
             "path": {"spec_id": "str", "table_id": "str"},
@@ -317,7 +317,7 @@ HELP_ENTRIES = [
     {
         "name": "spec_toc_get",
         "method": "GET",
-        "path": "/specs/{spec_id}/toc",
+        "path": "/v1/specs/{spec_id}/toc",
         "description": "Return TOC entries with optional depth filter; section_ref returns body text for that heading.",
         "request": {
             "query": {
@@ -337,7 +337,7 @@ HELP_ENTRIES = [
     {
         "name": "spec_grep_get",
         "method": "GET",
-        "path": "/specs/{spec_id}/grep",
+        "path": "/v1/specs/{spec_id}/grep",
         "description": "Search spec HTML with substring or regex.",
         "request": {
             "query": {
@@ -575,21 +575,7 @@ def _resolve_paths(spec_id: str, docs_dir: Optional[str]) -> tuple[Path, Path]:
     return resolve_doc_paths(spec_id, docs_dir=docs_path)
 
 
-@app.get(
-    "/specs/{spec_id}/sections/{section_id}",
-    operation_id="spec_sections_get",
-    include_in_schema=False,
-)
-def section_v1_disabled(spec_id: str, section_id: str) -> dict:
-    """Deprecated v1 endpoint; advise clients to use v2 with section_ref."""
-
-    raise HTTPException(
-        status_code=410,
-        detail={"message": "This endpoint is discontinued. Use /v2/specs/{spec_id}/sections/{section_ref}."},
-    )
-
-
-@app.get("/specs/{spec_id}/toc", operation_id="spec_toc_get", response_model=TOCResponse)
+@app.get("/v1/specs/{spec_id}/toc", operation_id="spec_toc_get", response_model=TOCResponse)
 def get_toc(
     spec_id: str,
     depth: Optional[int] = Query(
@@ -645,18 +631,18 @@ def get_toc(
     }
 
 
-@app.get("/health", operation_id="spec_health_get")
+@app.get("/v1/health", operation_id="spec_health_get")
 def health() -> HealthResponse:
     return {"status": "ok"}
 
 
-@app.get("/help", operation_id="spec_help_get", response_model=HelpResponse)
+@app.get("/v1/help", operation_id="spec_help_get", response_model=HelpResponse)
 def help_endpoint() -> HelpResponse:
     return {"status": "ok", "tools": HELP_ENTRIES}
 
 
 @app.get(
-    "/specs/{spec_id}/grep",
+    "/v1/specs/{spec_id}/grep",
     operation_id="spec_grep_get",
     response_model=GrepResult,
 )
@@ -694,7 +680,7 @@ def grep_spec(
 
 
 @app.get(
-    "/v2/specs/{spec_id}/sections/{section_ref}",
+    "/v1/specs/{spec_id}/sections/{section_ref}",
     operation_id="spec_sections_v2_get",
     response_model=SectionV2Response,
 )
@@ -753,7 +739,7 @@ def get_section_v2(
 
 
 @app.get(
-    "/v2/specs/{spec_id}/sections/{section_ref}/summary",
+    "/v1/specs/{spec_id}/sections/{section_ref}/summary",
     operation_id="spec_sections_summary_get",
     response_model=SectionSummaryResponse,
 )
@@ -795,7 +781,7 @@ def get_section_summary(
 
 
 @app.get(
-    "/v2/specs/resolve",
+    "/v1/specs/resolve",
     operation_id="spec_version_resolve_get",
     response_model=VersionResolveResponse,
 )
@@ -863,7 +849,7 @@ def resolve_spec_version(
 
 
 @app.get(
-    "/specs/{spec_id}/tables/{table_id}",
+    "/v1/specs/{spec_id}/tables/{table_id}",
     operation_id="spec_tables_get",
     response_model=TableResponse,
 )

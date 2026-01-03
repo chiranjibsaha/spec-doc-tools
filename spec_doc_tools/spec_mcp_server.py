@@ -33,12 +33,12 @@ OPERATION_NAME_MAP = {
 ROUTE_MAPS: Sequence[RouteMap] = (
     RouteMap(
         methods=["GET"],
-        pattern=r"^/health$",
+        pattern=r"^/v1/health$",
         mcp_type=MCPType.EXCLUDE,
     ),
     RouteMap(
         methods=["GET"],
-        pattern=r"^/help$",
+        pattern=r"^/v1/help$",
         mcp_type=MCPType.RESOURCE,
     ),
 )

@@ -7,7 +7,7 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.spec_toc_get_response_spec_toc_get import SpecTocGetResponseSpecTocGet
+from ...models.toc_response import TOCResponse
 from ...types import UNSET, Response, Unset
 
 
@@ -45,7 +45,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/specs/{spec_id}/toc".format(
+        "url": "/v1/specs/{spec_id}/toc".format(
             spec_id=quote(str(spec_id), safe=""),
         ),
         "params": params,
@@ -56,9 +56,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SpecTocGetResponseSpecTocGet | None:
+) -> HTTPValidationError | TOCResponse | None:
     if response.status_code == 200:
-        response_200 = SpecTocGetResponseSpecTocGet.from_dict(response.json())
+        response_200 = TOCResponse.from_dict(response.json())
 
         return response_200
 
@@ -75,7 +75,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SpecTocGetResponseSpecTocGet]:
+) -> Response[HTTPValidationError | TOCResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -91,7 +91,7 @@ def sync_detailed(
     depth: int | None | Unset = UNSET,
     section_ref: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecTocGetResponseSpecTocGet]:
+) -> Response[HTTPValidationError | TOCResponse]:
     """Get Toc
 
     Args:
@@ -108,7 +108,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecTocGetResponseSpecTocGet]
+        Response[HTTPValidationError | TOCResponse]
     """
 
     kwargs = _get_kwargs(
@@ -132,7 +132,7 @@ def sync(
     depth: int | None | Unset = UNSET,
     section_ref: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecTocGetResponseSpecTocGet | None:
+) -> HTTPValidationError | TOCResponse | None:
     """Get Toc
 
     Args:
@@ -149,7 +149,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecTocGetResponseSpecTocGet
+        HTTPValidationError | TOCResponse
     """
 
     return sync_detailed(
@@ -168,7 +168,7 @@ async def asyncio_detailed(
     depth: int | None | Unset = UNSET,
     section_ref: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecTocGetResponseSpecTocGet]:
+) -> Response[HTTPValidationError | TOCResponse]:
     """Get Toc
 
     Args:
@@ -185,7 +185,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecTocGetResponseSpecTocGet]
+        Response[HTTPValidationError | TOCResponse]
     """
 
     kwargs = _get_kwargs(
@@ -207,7 +207,7 @@ async def asyncio(
     depth: int | None | Unset = UNSET,
     section_ref: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecTocGetResponseSpecTocGet | None:
+) -> HTTPValidationError | TOCResponse | None:
     """Get Toc
 
     Args:
@@ -224,7 +224,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecTocGetResponseSpecTocGet
+        HTTPValidationError | TOCResponse
     """
 
     return (

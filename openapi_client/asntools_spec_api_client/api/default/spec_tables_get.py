@@ -7,7 +7,7 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.spec_tables_get_response_spec_tables_get import SpecTablesGetResponseSpecTablesGet
+from ...models.table_response import TableResponse
 from ...types import UNSET, Response, Unset
 
 
@@ -30,7 +30,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/specs/{spec_id}/tables/{table_id}".format(
+        "url": "/v1/specs/{spec_id}/tables/{table_id}".format(
             spec_id=quote(str(spec_id), safe=""),
             table_id=quote(str(table_id), safe=""),
         ),
@@ -42,9 +42,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SpecTablesGetResponseSpecTablesGet | None:
+) -> HTTPValidationError | TableResponse | None:
     if response.status_code == 200:
-        response_200 = SpecTablesGetResponseSpecTablesGet.from_dict(response.json())
+        response_200 = TableResponse.from_dict(response.json())
 
         return response_200
 
@@ -61,7 +61,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SpecTablesGetResponseSpecTablesGet]:
+) -> Response[HTTPValidationError | TableResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -76,7 +76,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecTablesGetResponseSpecTablesGet]:
+) -> Response[HTTPValidationError | TableResponse]:
     """Get Table
 
      Extract a specific table as structured Markdown.
@@ -92,7 +92,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecTablesGetResponseSpecTablesGet]
+        Response[HTTPValidationError | TableResponse]
     """
 
     kwargs = _get_kwargs(
@@ -114,7 +114,7 @@ def sync(
     *,
     client: AuthenticatedClient | Client,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecTablesGetResponseSpecTablesGet | None:
+) -> HTTPValidationError | TableResponse | None:
     """Get Table
 
      Extract a specific table as structured Markdown.
@@ -130,7 +130,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecTablesGetResponseSpecTablesGet
+        HTTPValidationError | TableResponse
     """
 
     return sync_detailed(
@@ -147,7 +147,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecTablesGetResponseSpecTablesGet]:
+) -> Response[HTTPValidationError | TableResponse]:
     """Get Table
 
      Extract a specific table as structured Markdown.
@@ -163,7 +163,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecTablesGetResponseSpecTablesGet]
+        Response[HTTPValidationError | TableResponse]
     """
 
     kwargs = _get_kwargs(
@@ -183,7 +183,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient | Client,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecTablesGetResponseSpecTablesGet | None:
+) -> HTTPValidationError | TableResponse | None:
     """Get Table
 
      Extract a specific table as structured Markdown.
@@ -199,7 +199,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecTablesGetResponseSpecTablesGet
+        HTTPValidationError | TableResponse
     """
 
     return (

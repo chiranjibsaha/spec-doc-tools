@@ -66,7 +66,7 @@ def test_section_v2_returns_single_chunk(tmp_path: Path) -> None:
     _write_fixture_spec(tmp_path, spec_id)
 
     client = TestClient(app)
-    resp = client.get(f"/v2/specs/{spec_id}/sections/4-7-2", params={"docs_dir": str(tmp_path)})
+    resp = client.get(f"/v1/specs/{spec_id}/sections/4-7-2", params={"docs_dir": str(tmp_path)})
 
     assert resp.status_code == 200
     payload = resp.json()
@@ -85,7 +85,7 @@ def test_toc_with_section_ref_returns_text(tmp_path: Path) -> None:
 
     client = TestClient(app)
     resp = client.get(
-        f"/specs/{spec_id}/toc",
+        f"/v1/specs/{spec_id}/toc",
         params={"docs_dir": str(tmp_path), "section_ref": "4-7-2"},
     )
 
@@ -109,7 +109,7 @@ def test_toc_section_ref_with_long_heading_id(tmp_path: Path) -> None:
 
     client = TestClient(app)
     resp = client.get(
-        f"/specs/{spec_id}/toc",
+        f"/v1/specs/{spec_id}/toc",
         params={"docs_dir": str(tmp_path), "section_ref": heading},
     )
 

@@ -18,26 +18,23 @@ Pass `--config /path/to/mcp_config.json` to point at a different remote endpoint
 Each tool accepts `persist: bool = False`. When set to `True`, the tool returns a minimal metadata payload plus a `write_to_files` array. The orchestrator should immediately call the local `write_to_files` tool with that array, writing under `tmp/spec_extracts/` (relative to the calling agent’s project root). Large markdown/JSON bodies stay only in `write_to_files`, keeping the LLM response small.
 
 Path conventions:
-- Section (chunked, no “v2” in name): `tmp/spec_extracts/{spec_id}/sections/{section_id}.md`
-- Section by heading: `tmp/spec_extracts/{spec_id}/sections/{heading_slug}.md`
+- Section: `tmp/spec_extracts/{spec_id}/sections/{section_ref}.md`
 - Table: `tmp/spec_extracts/{spec_id}/tables/{table_id}.md`
 - TOC: `tmp/spec_extracts/{spec_id}/toc.json`
 - Grep results: `tmp/spec_extracts/{spec_id}/grep/{pattern_slug}.json`
 - Version resolver (spec_id + presence): `tmp/spec_extracts/{spec_number}/resolve.json`
 
 ## Tool overview and curl examples (remote API)
-- `spec_section_get` → `/v2/specs/{spec_id}/sections/{section_id}`  
-  Example: `curl "http://<api_host>:<port>/v2/specs/38901-j10/sections/4-7-2?chunk_size=1200"`
-- `spec_sections_by_heading_get` → `/specs/{spec_id}/sections/by-heading`  
-  Example: `curl "http://<api_host>:<port>/specs/38901-j10/sections/by-heading?heading_text=Random%20access"`
-- `spec_tables_get` → `/specs/{spec_id}/tables/{table_id}` (table_id may be provided with or without the `Table` prefix)  
-  Example (no prefix): `curl "http://<api_host>:<port>/specs/38901-j10/tables/5.4-1"`
-- `spec_version_resolve_get` (supports `version=latest`) → `/v2/specs/resolve?spec_number=38901&version=latest`  
-  Example: `curl "http://<api_host>:<port>/v2/specs/resolve?spec_number=38901&version=latest"`
-- `spec_toc_get` → `/specs/{spec_id}/toc`  
-  Example: `curl "http://<api_host>:<port>/specs/38901-j10/toc?depth=3"`
-- `spec_grep_get` → `/specs/{spec_id}/grep?pattern=...&regex=bool`  
-  Example: `curl "http://<api_host>:<port>/specs/38901-j10/grep?pattern=beamforming&regex=false"`
+- `spec_section_get` → `/v1/specs/{spec_id}/sections/{section_ref}`  
+  Example: `curl "http://<api_host>:<port>/v1/specs/38901-j10/sections/4-7-2?chunk_size=1200"`
+- `spec_tables_get` → `/v1/specs/{spec_id}/tables/{table_id}` (table_id may be provided with or without the `Table` prefix)  
+  Example (no prefix): `curl "http://<api_host>:<port>/v1/specs/38901-j10/tables/5.4-1"`
+- `spec_version_resolve_get` (supports `version=latest`) → `/v1/specs/resolve?spec_number=38901&version=latest`  
+  Example: `curl "http://<api_host>:<port>/v1/specs/resolve?spec_number=38901&version=latest"`
+- `spec_toc_get` → `/v1/specs/{spec_id}/toc`  
+  Example: `curl "http://<api_host>:<port>/v1/specs/38901-j10/toc?depth=3"`
+- `spec_grep_get` → `/v1/specs/{spec_id}/grep?pattern=...&regex=bool`  
+  Example: `curl "http://<api_host>:<port>/v1/specs/38901-j10/grep?pattern=beamforming&regex=false"`
 
 ### Section tool response shape (v2 passthrough)
 - The `spec_section_get` tool now returns the entire section markdown in `md_snippet` (no truncation, single chunk). Chunking is disabled on the upstream endpoint; `chunk_size` is ignored.

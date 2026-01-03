@@ -6,28 +6,51 @@ from typing import Any, TypeVar
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-T = TypeVar("T", bound="SpecSectionsGetResponseSpecSectionsGet")
+T = TypeVar("T", bound="MarkdownPayload")
 
 
 @_attrs_define
-class SpecSectionsGetResponseSpecSectionsGet:
-    """ """
+class MarkdownPayload:
+    """
+    Attributes:
+        bytes_ (int):
+        md (str):
+    """
 
+    bytes_: int
+    md: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
+        bytes_ = self.bytes_
+
+        md = self.md
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
+        field_dict.update(
+            {
+                "bytes": bytes_,
+                "md": md,
+            }
+        )
 
         return field_dict
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        spec_sections_get_response_spec_sections_get = cls()
+        bytes_ = d.pop("bytes")
 
-        spec_sections_get_response_spec_sections_get.additional_properties = d
-        return spec_sections_get_response_spec_sections_get
+        md = d.pop("md")
+
+        markdown_payload = cls(
+            bytes_=bytes_,
+            md=md,
+        )
+
+        markdown_payload.additional_properties = d
+        return markdown_payload
 
     @property
     def additional_keys(self) -> list[str]:

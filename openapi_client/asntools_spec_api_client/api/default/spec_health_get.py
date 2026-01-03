@@ -5,24 +5,22 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
-from ...models.spec_health_get_response_spec_health_get import SpecHealthGetResponseSpecHealthGet
+from ...models.health_response import HealthResponse
 from ...types import Response
 
 
 def _get_kwargs() -> dict[str, Any]:
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/health",
+        "url": "/v1/health",
     }
 
     return _kwargs
 
 
-def _parse_response(
-    *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> SpecHealthGetResponseSpecHealthGet | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> HealthResponse | None:
     if response.status_code == 200:
-        response_200 = SpecHealthGetResponseSpecHealthGet.from_dict(response.json())
+        response_200 = HealthResponse.from_dict(response.json())
 
         return response_200
 
@@ -32,9 +30,7 @@ def _parse_response(
         return None
 
 
-def _build_response(
-    *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[SpecHealthGetResponseSpecHealthGet]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[HealthResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -46,7 +42,7 @@ def _build_response(
 def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
-) -> Response[SpecHealthGetResponseSpecHealthGet]:
+) -> Response[HealthResponse]:
     """Health
 
     Raises:
@@ -54,7 +50,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[SpecHealthGetResponseSpecHealthGet]
+        Response[HealthResponse]
     """
 
     kwargs = _get_kwargs()
@@ -69,7 +65,7 @@ def sync_detailed(
 def sync(
     *,
     client: AuthenticatedClient | Client,
-) -> SpecHealthGetResponseSpecHealthGet | None:
+) -> HealthResponse | None:
     """Health
 
     Raises:
@@ -77,7 +73,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        SpecHealthGetResponseSpecHealthGet
+        HealthResponse
     """
 
     return sync_detailed(
@@ -88,7 +84,7 @@ def sync(
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
-) -> Response[SpecHealthGetResponseSpecHealthGet]:
+) -> Response[HealthResponse]:
     """Health
 
     Raises:
@@ -96,7 +92,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[SpecHealthGetResponseSpecHealthGet]
+        Response[HealthResponse]
     """
 
     kwargs = _get_kwargs()
@@ -109,7 +105,7 @@ async def asyncio_detailed(
 async def asyncio(
     *,
     client: AuthenticatedClient | Client,
-) -> SpecHealthGetResponseSpecHealthGet | None:
+) -> HealthResponse | None:
     """Health
 
     Raises:
@@ -117,7 +113,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        SpecHealthGetResponseSpecHealthGet
+        HealthResponse
     """
 
     return (

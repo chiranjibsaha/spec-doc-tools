@@ -48,7 +48,7 @@ class RemoteSpecApiClient:
     ) -> dict:
         return self._request(
             "GET",
-            f"/v2/specs/{spec_id}/sections/{section_ref}",
+            f"/v1/specs/{spec_id}/sections/{section_ref}",
             params={
                 "include_heading": include_heading,
                 "chunk_size": chunk_size,
@@ -65,7 +65,7 @@ class RemoteSpecApiClient:
     ) -> dict:
         return self._request(
             "GET",
-            f"/v2/specs/{spec_id}/sections/{section_ref}/summary",
+            f"/v1/specs/{spec_id}/sections/{section_ref}/summary",
             params={
                 "include_heading": include_heading,
                 "docs_dir": docs_dir,
@@ -83,7 +83,7 @@ class RemoteSpecApiClient:
     ) -> dict:
         return self._request(
             "GET",
-            "/v2/specs/resolve",
+            "/v1/specs/resolve",
             params={
                 "spec_number": spec_number,
                 "version": version,

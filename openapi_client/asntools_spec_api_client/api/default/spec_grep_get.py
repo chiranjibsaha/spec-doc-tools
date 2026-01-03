@@ -6,8 +6,8 @@ import httpx
 
 from ... import errors
 from ...client import AuthenticatedClient, Client
+from ...models.grep_result import GrepResult
 from ...models.http_validation_error import HTTPValidationError
-from ...models.spec_grep_get_response_spec_grep_get import SpecGrepGetResponseSpecGrepGet
 from ...types import UNSET, Response, Unset
 
 
@@ -35,7 +35,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/specs/{spec_id}/grep".format(
+        "url": "/v1/specs/{spec_id}/grep".format(
             spec_id=quote(str(spec_id), safe=""),
         ),
         "params": params,
@@ -46,9 +46,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SpecGrepGetResponseSpecGrepGet | None:
+) -> GrepResult | HTTPValidationError | None:
     if response.status_code == 200:
-        response_200 = SpecGrepGetResponseSpecGrepGet.from_dict(response.json())
+        response_200 = GrepResult.from_dict(response.json())
 
         return response_200
 
@@ -65,7 +65,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SpecGrepGetResponseSpecGrepGet]:
+) -> Response[GrepResult | HTTPValidationError]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -81,7 +81,7 @@ def sync_detailed(
     pattern: str,
     regex: bool | Unset = False,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecGrepGetResponseSpecGrepGet]:
+) -> Response[GrepResult | HTTPValidationError]:
     """Grep Spec
 
      Search a spec HTML document for a substring and return structured matches.
@@ -99,7 +99,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecGrepGetResponseSpecGrepGet]
+        Response[GrepResult | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
@@ -123,7 +123,7 @@ def sync(
     pattern: str,
     regex: bool | Unset = False,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecGrepGetResponseSpecGrepGet | None:
+) -> GrepResult | HTTPValidationError | None:
     """Grep Spec
 
      Search a spec HTML document for a substring and return structured matches.
@@ -141,7 +141,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecGrepGetResponseSpecGrepGet
+        GrepResult | HTTPValidationError
     """
 
     return sync_detailed(
@@ -160,7 +160,7 @@ async def asyncio_detailed(
     pattern: str,
     regex: bool | Unset = False,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecGrepGetResponseSpecGrepGet]:
+) -> Response[GrepResult | HTTPValidationError]:
     """Grep Spec
 
      Search a spec HTML document for a substring and return structured matches.
@@ -178,7 +178,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecGrepGetResponseSpecGrepGet]
+        Response[GrepResult | HTTPValidationError]
     """
 
     kwargs = _get_kwargs(
@@ -200,7 +200,7 @@ async def asyncio(
     pattern: str,
     regex: bool | Unset = False,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecGrepGetResponseSpecGrepGet | None:
+) -> GrepResult | HTTPValidationError | None:
     """Grep Spec
 
      Search a spec HTML document for a substring and return structured matches.
@@ -218,7 +218,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecGrepGetResponseSpecGrepGet
+        GrepResult | HTTPValidationError
     """
 
     return (

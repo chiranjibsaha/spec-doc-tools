@@ -7,22 +7,18 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.spec_sections_by_heading_get_response_spec_sections_by_heading_get import (
-    SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet,
-)
+from ...models.section_summary_response import SectionSummaryResponse
 from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     spec_id: str,
+    section_ref: str,
     *,
-    heading_text: str,
     include_heading: bool | Unset = True,
     docs_dir: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
     params: dict[str, Any] = {}
-
-    params["heading_text"] = heading_text
 
     params["include_heading"] = include_heading
 
@@ -37,8 +33,9 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/specs/{spec_id}/sections/by-heading".format(
+        "url": "/v1/specs/{spec_id}/sections/{section_ref}/summary".format(
             spec_id=quote(str(spec_id), safe=""),
+            section_ref=quote(str(section_ref), safe=""),
         ),
         "params": params,
     }
@@ -48,9 +45,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet | None:
+) -> HTTPValidationError | SectionSummaryResponse | None:
     if response.status_code == 200:
-        response_200 = SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet.from_dict(response.json())
+        response_200 = SectionSummaryResponse.from_dict(response.json())
 
         return response_200
 
@@ -67,7 +64,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet]:
+) -> Response[HTTPValidationError | SectionSummaryResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -78,19 +75,19 @@ def _build_response(
 
 def sync_detailed(
     spec_id: str,
+    section_ref: str,
     *,
     client: AuthenticatedClient | Client,
-    heading_text: str,
     include_heading: bool | Unset = True,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet]:
-    """Get Section By Heading
+) -> Response[HTTPValidationError | SectionSummaryResponse]:
+    """Get Section Summary
 
-     Find a section by heading text and return it as markdown.
+     Return size-only metadata for a section.
 
     Args:
         spec_id (str):
-        heading_text (str): Heading text to match (case-insensitive).
+        section_ref (str):
         include_heading (bool | Unset): Include the heading tag in the extraction. Default: True.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
             specs_dir from spec_config.json.
@@ -100,12 +97,12 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet]
+        Response[HTTPValidationError | SectionSummaryResponse]
     """
 
     kwargs = _get_kwargs(
         spec_id=spec_id,
-        heading_text=heading_text,
+        section_ref=section_ref,
         include_heading=include_heading,
         docs_dir=docs_dir,
     )
@@ -119,19 +116,19 @@ def sync_detailed(
 
 def sync(
     spec_id: str,
+    section_ref: str,
     *,
     client: AuthenticatedClient | Client,
-    heading_text: str,
     include_heading: bool | Unset = True,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet | None:
-    """Get Section By Heading
+) -> HTTPValidationError | SectionSummaryResponse | None:
+    """Get Section Summary
 
-     Find a section by heading text and return it as markdown.
+     Return size-only metadata for a section.
 
     Args:
         spec_id (str):
-        heading_text (str): Heading text to match (case-insensitive).
+        section_ref (str):
         include_heading (bool | Unset): Include the heading tag in the extraction. Default: True.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
             specs_dir from spec_config.json.
@@ -141,13 +138,13 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet
+        HTTPValidationError | SectionSummaryResponse
     """
 
     return sync_detailed(
         spec_id=spec_id,
+        section_ref=section_ref,
         client=client,
-        heading_text=heading_text,
         include_heading=include_heading,
         docs_dir=docs_dir,
     ).parsed
@@ -155,19 +152,19 @@ def sync(
 
 async def asyncio_detailed(
     spec_id: str,
+    section_ref: str,
     *,
     client: AuthenticatedClient | Client,
-    heading_text: str,
     include_heading: bool | Unset = True,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet]:
-    """Get Section By Heading
+) -> Response[HTTPValidationError | SectionSummaryResponse]:
+    """Get Section Summary
 
-     Find a section by heading text and return it as markdown.
+     Return size-only metadata for a section.
 
     Args:
         spec_id (str):
-        heading_text (str): Heading text to match (case-insensitive).
+        section_ref (str):
         include_heading (bool | Unset): Include the heading tag in the extraction. Default: True.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
             specs_dir from spec_config.json.
@@ -177,12 +174,12 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet]
+        Response[HTTPValidationError | SectionSummaryResponse]
     """
 
     kwargs = _get_kwargs(
         spec_id=spec_id,
-        heading_text=heading_text,
+        section_ref=section_ref,
         include_heading=include_heading,
         docs_dir=docs_dir,
     )
@@ -194,19 +191,19 @@ async def asyncio_detailed(
 
 async def asyncio(
     spec_id: str,
+    section_ref: str,
     *,
     client: AuthenticatedClient | Client,
-    heading_text: str,
     include_heading: bool | Unset = True,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet | None:
-    """Get Section By Heading
+) -> HTTPValidationError | SectionSummaryResponse | None:
+    """Get Section Summary
 
-     Find a section by heading text and return it as markdown.
+     Return size-only metadata for a section.
 
     Args:
         spec_id (str):
-        heading_text (str): Heading text to match (case-insensitive).
+        section_ref (str):
         include_heading (bool | Unset): Include the heading tag in the extraction. Default: True.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
             specs_dir from spec_config.json.
@@ -216,14 +213,14 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecSectionsByHeadingGetResponseSpecSectionsByHeadingGet
+        HTTPValidationError | SectionSummaryResponse
     """
 
     return (
         await asyncio_detailed(
             spec_id=spec_id,
+            section_ref=section_ref,
             client=client,
-            heading_text=heading_text,
             include_heading=include_heading,
             docs_dir=docs_dir,
         )

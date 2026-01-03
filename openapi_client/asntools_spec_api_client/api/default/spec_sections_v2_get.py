@@ -7,13 +7,13 @@ import httpx
 from ... import errors
 from ...client import AuthenticatedClient, Client
 from ...models.http_validation_error import HTTPValidationError
-from ...models.spec_sections_v2_get_response_spec_sections_v2_get import SpecSectionsV2GetResponseSpecSectionsV2Get
+from ...models.section_v2_response import SectionV2Response
 from ...types import UNSET, Response, Unset
 
 
 def _get_kwargs(
     spec_id: str,
-    section_id: str,
+    section_ref: str,
     *,
     include_heading: bool | Unset = True,
     chunk_size: int | Unset = 1200,
@@ -36,9 +36,9 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/v2/specs/{spec_id}/sections/{section_id}".format(
+        "url": "/v1/specs/{spec_id}/sections/{section_ref}".format(
             spec_id=quote(str(spec_id), safe=""),
-            section_id=quote(str(section_id), safe=""),
+            section_ref=quote(str(section_ref), safe=""),
         ),
         "params": params,
     }
@@ -48,9 +48,9 @@ def _get_kwargs(
 
 def _parse_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get | None:
+) -> HTTPValidationError | SectionV2Response | None:
     if response.status_code == 200:
-        response_200 = SpecSectionsV2GetResponseSpecSectionsV2Get.from_dict(response.json())
+        response_200 = SectionV2Response.from_dict(response.json())
 
         return response_200
 
@@ -67,7 +67,7 @@ def _parse_response(
 
 def _build_response(
     *, client: AuthenticatedClient | Client, response: httpx.Response
-) -> Response[HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get]:
+) -> Response[HTTPValidationError | SectionV2Response]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -78,20 +78,20 @@ def _build_response(
 
 def sync_detailed(
     spec_id: str,
-    section_id: str,
+    section_ref: str,
     *,
     client: AuthenticatedClient | Client,
     include_heading: bool | Unset = True,
     chunk_size: int | Unset = 1200,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get]:
+) -> Response[HTTPValidationError | SectionV2Response]:
     """Get Section V2
 
      Extract a section as Markdown with embedded images (base64).
 
     Args:
         spec_id (str):
-        section_id (str):
+        section_ref (str):
         include_heading (bool | Unset): Include the heading tag in the extraction. Default: True.
         chunk_size (int | Unset): Ignored (kept for backward compatibility). Default: 1200.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
@@ -102,12 +102,12 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get]
+        Response[HTTPValidationError | SectionV2Response]
     """
 
     kwargs = _get_kwargs(
         spec_id=spec_id,
-        section_id=section_id,
+        section_ref=section_ref,
         include_heading=include_heading,
         chunk_size=chunk_size,
         docs_dir=docs_dir,
@@ -122,20 +122,20 @@ def sync_detailed(
 
 def sync(
     spec_id: str,
-    section_id: str,
+    section_ref: str,
     *,
     client: AuthenticatedClient | Client,
     include_heading: bool | Unset = True,
     chunk_size: int | Unset = 1200,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get | None:
+) -> HTTPValidationError | SectionV2Response | None:
     """Get Section V2
 
      Extract a section as Markdown with embedded images (base64).
 
     Args:
         spec_id (str):
-        section_id (str):
+        section_ref (str):
         include_heading (bool | Unset): Include the heading tag in the extraction. Default: True.
         chunk_size (int | Unset): Ignored (kept for backward compatibility). Default: 1200.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
@@ -146,12 +146,12 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get
+        HTTPValidationError | SectionV2Response
     """
 
     return sync_detailed(
         spec_id=spec_id,
-        section_id=section_id,
+        section_ref=section_ref,
         client=client,
         include_heading=include_heading,
         chunk_size=chunk_size,
@@ -161,20 +161,20 @@ def sync(
 
 async def asyncio_detailed(
     spec_id: str,
-    section_id: str,
+    section_ref: str,
     *,
     client: AuthenticatedClient | Client,
     include_heading: bool | Unset = True,
     chunk_size: int | Unset = 1200,
     docs_dir: None | str | Unset = UNSET,
-) -> Response[HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get]:
+) -> Response[HTTPValidationError | SectionV2Response]:
     """Get Section V2
 
      Extract a section as Markdown with embedded images (base64).
 
     Args:
         spec_id (str):
-        section_id (str):
+        section_ref (str):
         include_heading (bool | Unset): Include the heading tag in the extraction. Default: True.
         chunk_size (int | Unset): Ignored (kept for backward compatibility). Default: 1200.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
@@ -185,12 +185,12 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get]
+        Response[HTTPValidationError | SectionV2Response]
     """
 
     kwargs = _get_kwargs(
         spec_id=spec_id,
-        section_id=section_id,
+        section_ref=section_ref,
         include_heading=include_heading,
         chunk_size=chunk_size,
         docs_dir=docs_dir,
@@ -203,20 +203,20 @@ async def asyncio_detailed(
 
 async def asyncio(
     spec_id: str,
-    section_id: str,
+    section_ref: str,
     *,
     client: AuthenticatedClient | Client,
     include_heading: bool | Unset = True,
     chunk_size: int | Unset = 1200,
     docs_dir: None | str | Unset = UNSET,
-) -> HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get | None:
+) -> HTTPValidationError | SectionV2Response | None:
     """Get Section V2
 
      Extract a section as Markdown with embedded images (base64).
 
     Args:
         spec_id (str):
-        section_id (str):
+        section_ref (str):
         include_heading (bool | Unset): Include the heading tag in the extraction. Default: True.
         chunk_size (int | Unset): Ignored (kept for backward compatibility). Default: 1200.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
@@ -227,13 +227,13 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        HTTPValidationError | SpecSectionsV2GetResponseSpecSectionsV2Get
+        HTTPValidationError | SectionV2Response
     """
 
     return (
         await asyncio_detailed(
             spec_id=spec_id,
-            section_id=section_id,
+            section_ref=section_ref,
             client=client,
             include_heading=include_heading,
             chunk_size=chunk_size,

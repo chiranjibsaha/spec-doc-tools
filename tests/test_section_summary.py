@@ -39,7 +39,7 @@ def test_section_summary_returns_counts(tmp_path: Path) -> None:
 
     client = TestClient(app)
     resp = client.get(
-        f"/v2/specs/{spec_id}/sections/4-7-2/summary",
+        f"/v1/specs/{spec_id}/sections/4-7-2/summary",
         params={"docs_dir": str(tmp_path)},
     )
 

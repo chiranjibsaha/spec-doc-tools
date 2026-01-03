@@ -25,23 +25,23 @@ Run: `spec-api  # defaults to 0.0.0.0:8010`
 - Change host: `spec-api --host 127.0.0.1`  
 Set the specs root via `--docs-dir /path/to/specs`, or export `SPEC_DOCS_DIR`. When installed site-wide, you can also point to a config file with `SPEC_CONFIG_PATH=/path/to/spec_config.json`.
 
-Endpoints (+ curl examples):
-- Sections v2: `GET /v2/specs/{spec_id}/sections/{section_ref}` — Markdown + images (single chunk; `chunk_size` is ignored).  
-  Example: `curl "http://localhost:8010/v2/specs/38901-j10/sections/4-7-2"`
-- Section summary: `GET /v2/specs/{spec_id}/sections/{section_ref}/summary` — Returns `chars`/`bytes` only (no content).  
-  Example: `curl "http://localhost:8010/v2/specs/38901-j10/sections/4-7-2/summary"`
-- Tables: `GET /specs/{spec_id}/tables/{table_id}` — Table to Markdown with caption. `table_id` can be passed with or without the `Table` prefix.  
-  Example (no prefix): `curl "http://localhost:8010/specs/38901-j10/tables/5.4-1"`
-- Version resolver (supports `version=latest` or `major/minor/patch`): `GET /v2/specs/resolve?spec_number=38901&version=latest`  
-  Example: `curl "http://localhost:8010/v2/specs/resolve?spec_number=38901&version=latest"`
-- TOC: `GET /specs/{spec_id}/toc` — Optional `depth` and `section_ref` filters.  
+- Endpoints (+ curl examples):
+- Sections: `GET /v1/specs/{spec_id}/sections/{section_ref}` — Markdown + images (single chunk; `chunk_size` is ignored).  
+  Example: `curl "http://localhost:8010/v1/specs/38901-j10/sections/4-7-2"`
+- Section summary: `GET /v1/specs/{spec_id}/sections/{section_ref}/summary` — Returns `chars`/`bytes` only (no content).  
+  Example: `curl "http://localhost:8010/v1/specs/38901-j10/sections/4-7-2/summary"`
+- Tables: `GET /v1/specs/{spec_id}/tables/{table_id}` — Table to Markdown with caption. `table_id` can be passed with or without the `Table` prefix.  
+  Example (no prefix): `curl "http://localhost:8010/v1/specs/38901-j10/tables/5.4-1"`
+- Version resolver (supports `version=latest` or `major/minor/patch`): `GET /v1/specs/resolve?spec_number=38901&version=latest`  
+  Example: `curl "http://localhost:8010/v1/specs/resolve?spec_number=38901&version=latest"`
+- TOC: `GET /v1/specs/{spec_id}/toc` — Optional `depth` and `section_ref` filters.  
   - `section_ref`: full heading id to resolve and return the section body text (heading excluded).  
   Examples:  
-  - `curl "http://localhost:8010/specs/38901-j10/toc?depth=3"`  
-  - `curl "http://localhost:8010/specs/38901-j10/toc?section_ref=7-4-3-1-o2i-building-penetration-loss"` -> includes `html_id` and `section_text` for that heading.
-- Grep: `GET /specs/{spec_id}/grep?pattern=...&regex=bool` — Substring/regex search.  
-  Example: `curl "http://localhost:8010/specs/38901-j10/grep?pattern=beamforming&regex=false"`
-- `GET /health`, `GET /help` (tool metadata).
+  - `curl "http://localhost:8010/v1/specs/38901-j10/toc?depth=3"`  
+  - `curl "http://localhost:8010/v1/specs/38901-j10/toc?section_ref=7-4-3-1-o2i-building-penetration-loss"` -> includes `html_id` and `section_text` for that heading.
+- Grep: `GET /v1/specs/{spec_id}/grep?pattern=...&regex=bool` — Substring/regex search.  
+  Example: `curl "http://localhost:8010/v1/specs/38901-j10/grep?pattern=beamforming&regex=false"`
+- `GET /v1/health`, `GET /v1/help` (tool metadata).
 
 Example v2 response (single chunk):
 ```json
