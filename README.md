@@ -26,23 +26,23 @@ Run: `spec-api  # defaults to 0.0.0.0:8010`
 Set the specs root via `--docs-dir /path/to/specs`, or export `SPEC_DOCS_DIR`. When installed site-wide, you can also point to a config file with `SPEC_CONFIG_PATH=/path/to/spec_config.json`.
 
 - Endpoints (+ curl examples):
-- Sections: `GET /v1/specs/{spec_id}/sections/{clause_id_ref}` — Markdown + images (single chunk; `chunk_size` is ignored).  
-  Example: `curl "http://localhost:8010/v1/specs/38901-j10/sections/4-7-2"`
-- Section summary: `GET /v1/specs/{spec_id}/sections/{clause_id_ref}/summary` — Returns `chars`/`bytes` only (no content).  
-  Example: `curl "http://localhost:8010/v1/specs/38901-j10/sections/4-7-2/summary"`
-- Tables: `GET /v1/specs/{spec_id}/tables/{table_id}` — Table to Markdown with caption. `table_id` can be passed with or without the `Table` prefix.  
-  Example (no prefix): `curl "http://localhost:8010/v1/specs/38901-j10/tables/5.4-1"`
+- Sections: `GET /v1/specs/{spec_id}/sections/{clause_id_ref}` — Optional `version=MAJ.MIN.PATCH`; Markdown + images (single chunk; `chunk_size` is ignored).  
+  Example: `curl "http://localhost:8010/v1/specs/38901/sections/4-7-2?version=19.0.0"`
+- Section summary: `GET /v1/specs/{spec_id}/sections/{clause_id_ref}/summary` — Optional `version=MAJ.MIN.PATCH`; returns `chars`/`bytes` only (no content).  
+  Example: `curl "http://localhost:8010/v1/specs/38901/sections/4-7-2/summary?version=19.0.0"`
+- Tables: `GET /v1/specs/{spec_id}/tables/{table_id}` — Optional `version=MAJ.MIN.PATCH`; table to Markdown with caption. `table_id` can be passed with or without the `Table` prefix.  
+  Example (no prefix): `curl "http://localhost:8010/v1/specs/38901/tables/5.4-1?version=19.0.0"`
 - Version resolver (supports `version=latest` or `major/minor/patch`): `GET /v1/specs/resolve?spec_number=38901&version=latest`  
   Example: `curl "http://localhost:8010/v1/specs/resolve?spec_number=38901&version=latest"`
 - TOC: `GET /v1/specs/{spec_id}/toc` — Optional `depth` filter.  
-  - If `spec_id` is just the spec number (e.g., `38901`), the latest available version is chosen automatically.  
+  - `spec_id` may be dotted or plain (e.g., `38.300` or `38300`); if no suffix, the latest available version is chosen automatically.  
   - Optional `version=19.0.0` forces a specific version (converted to suffix like `j00`).  
   - TOC entries expose the heading id as `clause_id_ref`.  
   Examples:  
   - `curl "http://localhost:8010/v1/specs/38901/toc?depth=3"`  (auto-latest)  
   - `curl "http://localhost:8010/v1/specs/38901/toc?version=19.0.0"`  (forces j00)
-- Grep: `GET /v1/specs/{spec_id}/grep?pattern=...&regex=bool` — Substring/regex search.  
-  Example: `curl "http://localhost:8010/v1/specs/38901-j10/grep?pattern=beamforming&regex=false"`
+- Grep: `GET /v1/specs/{spec_id}/grep?pattern=...&regex=bool` — Optional `version=MAJ.MIN.PATCH`; substring/regex search.  
+  Example: `curl "http://localhost:8010/v1/specs/38901/grep?pattern=beamforming&regex=false&version=19.0.0"`
 - `GET /v1/health`, `GET /v1/help` (tool metadata).
 
 Example v2 response (single chunk):
