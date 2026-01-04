@@ -19,7 +19,6 @@ from .spec_docs import (
     extract_table_html,
     filter_toc_entries,
     html_fragment_to_markdown,
-    html_fragment_to_text,
     html_fragment_to_markdown_with_images,
     load_toc_entries,
     load_toc_json,
@@ -138,7 +137,7 @@ class TOCItem(BaseModel):
     clause_id: Optional[str]
     clause_title: str
     level: int
-    id: str
+    clause_id_ref: str
 
 
 class TOCResponse(BaseModel):
@@ -148,9 +147,6 @@ class TOCResponse(BaseModel):
     spec_id: str
     depth_limit: Optional[int]
     toc: list[TOCItem]
-    section_ref: Optional[str] = None
-    html_id: Optional[str] = None
-    section_text: Optional[str] = None
     source: SourceInfo
 
 
@@ -318,12 +314,12 @@ HELP_ENTRIES = [
         "name": "spec_toc_get",
         "method": "GET",
         "path": "/v1/specs/{spec_id}/toc",
-        "description": "Return TOC entries with optional depth filter; section_ref returns body text for that heading.",
+        "description": "Return TOC entries with optional depth filter. If spec_id lacks a suffix, the latest version is used unless a version query is provided.",
         "request": {
             "query": {
                 "spec_id": "str",
                 "depth": "int?",
-                "section_ref": "str?",
+                "version": "str?",
                 "docs_dir": "Optional[str]",
             }
         },
@@ -575,6 +571,37 @@ def _resolve_paths(spec_id: str, docs_dir: Optional[str]) -> tuple[Path, Path]:
     return resolve_doc_paths(spec_id, docs_dir=docs_path)
 
 
+def _resolve_spec_identifier(spec_or_number: str, version: Optional[str], docs_dir: Optional[str]) -> str:
+    """Resolve a spec_id or bare spec number plus version into a concrete spec_id with suffix."""
+
+    spec_or_number = spec_or_number.strip()
+    if not spec_or_number:
+        raise SpecDocError("spec_id must be non-empty")
+
+    # If already a spec_id with suffix and no override requested, return as-is.
+    if "-" in spec_or_number and version is None:
+        return spec_or_number
+
+    base_number_raw = spec_or_number.split("-")[0]
+    base_number = re.sub(r"[^0-9]", "", base_number_raw)
+    if not base_number:
+        raise SpecDocError(f"Invalid spec number: {spec_or_number}")
+
+    if version:
+        try:
+            major_val, minor_val, patch_val = _parse_version(version)
+        except ValueError as exc:
+            raise SpecDocError(str(exc)) from exc
+    else:
+        latest = _find_latest_spec_version(base_number, docs_dir)
+        if latest is None:
+            raise SpecDocError(f"No versions found for spec_number {base_number}")
+        major_val, minor_val, patch_val = latest
+
+    suffix = _encode_version_suffix(major_val, minor_val, patch_val)
+    return f"{base_number}-{suffix}"
+
+
 @app.get("/v1/specs/{spec_id}/toc", operation_id="spec_toc_get", response_model=TOCResponse)
 def get_toc(
     spec_id: str,
@@ -583,9 +610,12 @@ def get_toc(
         ge=1,
         description="Limit to this heading depth (1=top level). Applies to tree depth in the TOC.",
     ),
-    section_ref: Optional[str] = Query(
+    version: Optional[str] = Query(
         None,
-        description="Full heading id; when provided, also return the section text under that heading.",
+        description=(
+            "Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). "
+            "If omitted and spec_id lacks a suffix, the latest available version is used."
+        ),
     ),
     docs_dir: Optional[str] = Query(
         None,
@@ -593,19 +623,14 @@ def get_toc(
     ),
 ) -> TOCResponse:
     try:
-        html_path, toc_path = _resolve_paths(spec_id, docs_dir)
+        resolved_spec_id = _resolve_spec_identifier(spec_id, version, docs_dir)
+        html_path, toc_path = _resolve_paths(resolved_spec_id, docs_dir)
         toc_json = load_toc_json(toc_path)
         entries = load_toc_entries(toc_json)
         items = filter_toc_entries(
             entries,
             max_depth=(depth - 1) if depth is not None else None,
         )
-        section_text: str | None = None
-        section_html_id: str | None = None
-        if section_ref:
-            section_html_id = resolve_section_html_id(entries, section_ref)
-            fragment = extract_section_html(html_path, section_html_id, include_heading=False)
-            section_text = html_fragment_to_text(fragment)
     except SpecDocError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
@@ -615,18 +640,15 @@ def get_toc(
             "clause_id": entry.clause_id,
             "clause_title": entry.clause_title,
             "level": entry.level,
-            "id": entry.html_id,
+            "clause_id_ref": entry.html_id,
         }
         for depth_val, entry in items
     ]
     return {
         "status": "ok",
-        "spec_id": spec_id,
+        "spec_id": resolved_spec_id,
         "depth_limit": depth,
         "toc": toc_items,
-        "section_ref": section_ref,
-        "html_id": section_html_id,
-        "section_text": section_text,
         "source": {"toc_path": str(toc_path)},
     }
 

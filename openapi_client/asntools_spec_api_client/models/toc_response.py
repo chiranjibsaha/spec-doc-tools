@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
 
-from ..types import UNSET, Unset
 
 if TYPE_CHECKING:
     from ..models.source_info import SourceInfo
@@ -25,9 +24,6 @@ class TOCResponse:
         depth_limit (int | None):
         toc (list[TOCItem]):
         source (SourceInfo):
-        section_ref (None | str | Unset):
-        html_id (None | str | Unset):
-        section_text (None | str | Unset):
     """
 
     status: str
@@ -35,9 +31,6 @@ class TOCResponse:
     depth_limit: int | None
     toc: list[TOCItem]
     source: SourceInfo
-    section_ref: None | str | Unset = UNSET
-    html_id: None | str | Unset = UNSET
-    section_text: None | str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -55,24 +48,6 @@ class TOCResponse:
 
         source = self.source.to_dict()
 
-        section_ref: None | str | Unset
-        if isinstance(self.section_ref, Unset):
-            section_ref = UNSET
-        else:
-            section_ref = self.section_ref
-
-        html_id: None | str | Unset
-        if isinstance(self.html_id, Unset):
-            html_id = UNSET
-        else:
-            html_id = self.html_id
-
-        section_text: None | str | Unset
-        if isinstance(self.section_text, Unset):
-            section_text = UNSET
-        else:
-            section_text = self.section_text
-
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update(
@@ -84,13 +59,6 @@ class TOCResponse:
                 "source": source,
             }
         )
-        if section_ref is not UNSET:
-            field_dict["section_ref"] = section_ref
-        if html_id is not UNSET:
-            field_dict["html_id"] = html_id
-        if section_text is not UNSET:
-            field_dict["section_text"] = section_text
-
         return field_dict
 
     @classmethod
@@ -119,42 +87,12 @@ class TOCResponse:
 
         source = SourceInfo.from_dict(d.pop("source"))
 
-        def _parse_section_ref(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        section_ref = _parse_section_ref(d.pop("section_ref", UNSET))
-
-        def _parse_html_id(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        html_id = _parse_html_id(d.pop("html_id", UNSET))
-
-        def _parse_section_text(data: object) -> None | str | Unset:
-            if data is None:
-                return data
-            if isinstance(data, Unset):
-                return data
-            return cast(None | str | Unset, data)
-
-        section_text = _parse_section_text(d.pop("section_text", UNSET))
-
         toc_response = cls(
             status=status,
             spec_id=spec_id,
             depth_limit=depth_limit,
             toc=toc,
             source=source,
-            section_ref=section_ref,
-            html_id=html_id,
-            section_text=section_text,
         )
 
         toc_response.additional_properties = d

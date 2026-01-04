@@ -15,7 +15,7 @@ def _get_kwargs(
     spec_id: str,
     *,
     depth: int | None | Unset = UNSET,
-    section_ref: None | str | Unset = UNSET,
+    version: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
 ) -> dict[str, Any]:
     params: dict[str, Any] = {}
@@ -27,12 +27,12 @@ def _get_kwargs(
         json_depth = depth
     params["depth"] = json_depth
 
-    json_section_ref: None | str | Unset
-    if isinstance(section_ref, Unset):
-        json_section_ref = UNSET
+    json_version: None | str | Unset
+    if isinstance(version, Unset):
+        json_version = UNSET
     else:
-        json_section_ref = section_ref
-    params["section_ref"] = json_section_ref
+        json_version = version
+    params["version"] = json_version
 
     json_docs_dir: None | str | Unset
     if isinstance(docs_dir, Unset):
@@ -89,7 +89,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
     depth: int | None | Unset = UNSET,
-    section_ref: None | str | Unset = UNSET,
+    version: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
 ) -> Response[HTTPValidationError | TOCResponse]:
     """Get Toc
@@ -98,8 +98,8 @@ def sync_detailed(
         spec_id (str):
         depth (int | None | Unset): Limit to this heading depth (1=top level). Applies to tree
             depth in the TOC.
-        section_ref (None | str | Unset): Full heading id; when provided, also return the section
-            text under that heading.
+        version (None | str | Unset): Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). If
+            omitted and spec_id lacks a suffix, the latest available version is used.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
             specs_dir from spec_config.json.
 
@@ -114,7 +114,7 @@ def sync_detailed(
     kwargs = _get_kwargs(
         spec_id=spec_id,
         depth=depth,
-        section_ref=section_ref,
+        version=version,
         docs_dir=docs_dir,
     )
 
@@ -130,7 +130,7 @@ def sync(
     *,
     client: AuthenticatedClient | Client,
     depth: int | None | Unset = UNSET,
-    section_ref: None | str | Unset = UNSET,
+    version: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
 ) -> HTTPValidationError | TOCResponse | None:
     """Get Toc
@@ -139,8 +139,8 @@ def sync(
         spec_id (str):
         depth (int | None | Unset): Limit to this heading depth (1=top level). Applies to tree
             depth in the TOC.
-        section_ref (None | str | Unset): Full heading id; when provided, also return the section
-            text under that heading.
+        version (None | str | Unset): Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). If
+            omitted and spec_id lacks a suffix, the latest available version is used.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
             specs_dir from spec_config.json.
 
@@ -156,7 +156,7 @@ def sync(
         spec_id=spec_id,
         client=client,
         depth=depth,
-        section_ref=section_ref,
+        version=version,
         docs_dir=docs_dir,
     ).parsed
 
@@ -166,7 +166,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
     depth: int | None | Unset = UNSET,
-    section_ref: None | str | Unset = UNSET,
+    version: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
 ) -> Response[HTTPValidationError | TOCResponse]:
     """Get Toc
@@ -175,8 +175,8 @@ async def asyncio_detailed(
         spec_id (str):
         depth (int | None | Unset): Limit to this heading depth (1=top level). Applies to tree
             depth in the TOC.
-        section_ref (None | str | Unset): Full heading id; when provided, also return the section
-            text under that heading.
+        version (None | str | Unset): Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). If
+            omitted and spec_id lacks a suffix, the latest available version is used.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
             specs_dir from spec_config.json.
 
@@ -191,7 +191,7 @@ async def asyncio_detailed(
     kwargs = _get_kwargs(
         spec_id=spec_id,
         depth=depth,
-        section_ref=section_ref,
+        version=version,
         docs_dir=docs_dir,
     )
 
@@ -205,7 +205,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient | Client,
     depth: int | None | Unset = UNSET,
-    section_ref: None | str | Unset = UNSET,
+    version: None | str | Unset = UNSET,
     docs_dir: None | str | Unset = UNSET,
 ) -> HTTPValidationError | TOCResponse | None:
     """Get Toc
@@ -214,8 +214,8 @@ async def asyncio(
         spec_id (str):
         depth (int | None | Unset): Limit to this heading depth (1=top level). Applies to tree
             depth in the TOC.
-        section_ref (None | str | Unset): Full heading id; when provided, also return the section
-            text under that heading.
+        version (None | str | Unset): Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). If
+            omitted and spec_id lacks a suffix, the latest available version is used.
         docs_dir (None | str | Unset): Optional override for the specs directory. Defaults to
             specs_dir from spec_config.json.
 
@@ -232,7 +232,7 @@ async def asyncio(
             spec_id=spec_id,
             client=client,
             depth=depth,
-            section_ref=section_ref,
+            version=version,
             docs_dir=docs_dir,
         )
     ).parsed

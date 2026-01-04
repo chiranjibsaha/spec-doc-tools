@@ -17,14 +17,14 @@ class TOCItem:
         clause_id (None | str):
         clause_title (str):
         level (int):
-        id (str):
+        clause_id_ref (str):
     """
 
     depth: int
     clause_id: None | str
     clause_title: str
     level: int
-    id: str
+    clause_id_ref: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -37,7 +37,7 @@ class TOCItem:
 
         level = self.level
 
-        id = self.id
+        clause_id_ref = self.clause_id_ref
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -47,7 +47,7 @@ class TOCItem:
                 "clause_id": clause_id,
                 "clause_title": clause_title,
                 "level": level,
-                "id": id,
+                "clause_id_ref": clause_id_ref,
             }
         )
 
@@ -69,14 +69,14 @@ class TOCItem:
 
         level = d.pop("level")
 
-        id = d.pop("id")
+        clause_id_ref = d.pop("clause_id_ref")
 
         toc_item = cls(
             depth=depth,
             clause_id=clause_id,
             clause_title=clause_title,
             level=level,
-            id=id,
+            clause_id_ref=clause_id_ref,
         )
 
         toc_item.additional_properties = d

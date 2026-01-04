@@ -79,41 +79,72 @@ def test_section_v2_returns_single_chunk(tmp_path: Path) -> None:
     assert chunk["bytes"] == markdown["bytes"]
 
 
-def test_toc_with_section_ref_returns_text(tmp_path: Path) -> None:
+def test_toc_returns_tree_only(tmp_path: Path) -> None:
     spec_id = "38901-j10"
     _write_fixture_spec(tmp_path, spec_id)
 
     client = TestClient(app)
-    resp = client.get(
-        f"/v1/specs/{spec_id}/toc",
-        params={"docs_dir": str(tmp_path), "section_ref": "4-7-2"},
-    )
+    resp = client.get(f"/v1/specs/{spec_id}/toc", params={"docs_dir": str(tmp_path)})
 
     assert resp.status_code == 200
     payload = resp.json()
-    assert payload["html_id"] == "4-7-2"
-    # include_heading=False in server; body text only
-    assert payload["section_text"].startswith("Short body text")
+    assert payload["spec_id"] == spec_id
+    assert payload["toc"]
+    assert payload["toc"][0]["clause_id_ref"]
+    assert "section_ref" not in payload
+    assert "section_text" not in payload
+    assert "html_id" not in payload
 
 
-def test_toc_section_ref_with_long_heading_id(tmp_path: Path) -> None:
-    spec_id = "38901-j11"
-    heading = "7-4-3-1-o2i-building-penetration-loss"
+def test_toc_defaults_to_latest_when_no_suffix(tmp_path: Path) -> None:
+    spec_number = "38901"
+    old_id = f"{spec_number}-j09"
+    new_id = f"{spec_number}-j10"
+    _write_fixture_spec(tmp_path, old_id)
     _write_custom_heading_spec(
         tmp_path,
-        spec_id,
-        heading_id=heading,
-        clause_id="7.4.3.1",
-        title="O2I building penetration loss",
+        new_id,
+        heading_id="4-7-2",
+        clause_id="4.7.2",
+        title="Clause 4.7.2",
     )
 
     client = TestClient(app)
+    resp = client.get(f"/v1/specs/{spec_number}/toc", params={"docs_dir": str(tmp_path)})
+
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["spec_id"] == new_id  # latest suffix picked
+    assert payload["toc"]
+
+
+def test_toc_accepts_dotted_spec_number(tmp_path: Path) -> None:
+    spec_number_dot = "38.901"
+    base_number = "38901"
+    latest_id = f"{base_number}-j10"
+    _write_fixture_spec(tmp_path, f"{base_number}-j09")
+    _write_fixture_spec(tmp_path, latest_id)
+
+    client = TestClient(app)
+    resp = client.get(f"/v1/specs/{spec_number_dot}/toc", params={"docs_dir": str(tmp_path)})
+
+    assert resp.status_code == 200
+    payload = resp.json()
+    assert payload["spec_id"] == latest_id
+    assert payload["toc"]
+
+
+def test_toc_uses_version_query_when_provided(tmp_path: Path) -> None:
+    spec_number = "38901"
+    target_id = f"{spec_number}-j00"
+    _write_fixture_spec(tmp_path, target_id)
+
+    client = TestClient(app)
     resp = client.get(
-        f"/v1/specs/{spec_id}/toc",
-        params={"docs_dir": str(tmp_path), "section_ref": heading},
+        f"/v1/specs/{spec_number}/toc",
+        params={"docs_dir": str(tmp_path), "version": "19.0.0"},
     )
 
     assert resp.status_code == 200
     payload = resp.json()
-    assert payload["html_id"] == heading
-    assert payload["section_text"].startswith("Body for the special heading")
+    assert payload["spec_id"] == target_id
