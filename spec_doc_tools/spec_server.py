@@ -631,6 +631,7 @@ def _resolve_spec_identifier(
             major_val, minor_val, patch_val = _parse_version(version)
         except ValueError as exc:
             raise SpecDocError(str(exc)) from exc
+        # If explicit version is given but files are missing, upstream callers will surface available versions.
     else:
         latest = _find_latest_spec_version(base_number, docs_dir)
         if latest is None:
@@ -784,7 +785,7 @@ def get_section_v2(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> SectionV2Response:
+    ) -> SectionV2Response:
     """Extract a section as Markdown with embedded images (base64)."""
 
     try:
@@ -852,7 +853,7 @@ def get_section_summary(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> SectionSummaryResponse:
+    ) -> SectionSummaryResponse:
     """Return size-only metadata for a section."""
 
     try:
@@ -975,7 +976,7 @@ def get_table(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
     ),
-) -> TableResponse:
+    ) -> TableResponse:
     """Extract a specific table as structured Markdown."""
 
     try:
