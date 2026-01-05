@@ -464,6 +464,34 @@ def _find_latest_spec_version(spec_number: str, docs_dir: Optional[str]) -> tupl
     return best
 
 
+def _list_spec_versions(spec_number: str, docs_dir: Optional[str]) -> list[tuple[int, int, int]]:
+    root = _docs_root(docs_dir)
+    versions: list[tuple[int, int, int]] = []
+    for path in root.glob(f"{spec_number}-*"):
+        if path.is_dir():
+            suffix = path.name[len(spec_number) + 1 :]
+        else:
+            if not (path.suffix == ".html" or path.name.endswith("_toc.json")):
+                continue
+            suffix = path.stem[len(spec_number) + 1 :]
+            if suffix.endswith("_toc"):
+                suffix = suffix[: -len("_toc")]
+        try:
+            versions.append(_decode_version_suffix(suffix))
+        except ValueError:
+            continue
+    versions.sort()
+    return versions
+
+
+def _format_versions(versions: list[tuple[int, int, int]]) -> str:
+    return ", ".join(f"V{maj}.{min}.{pat} ({_encode_version_suffix(maj, min, pat)})" for maj, min, pat in versions)
+
+
+def _format_versions(versions: list[tuple[int, int, int]]) -> str:
+    return ", ".join(f"V{maj}.{min}.{pat} ({_encode_version_suffix(maj, min, pat)})" for maj, min, pat in versions)
+
+
 _HEADING_ID_RE = re.compile(r"<h([1-6])[^>]*\bid\s*=\s*\"(?P<id>[^\"]+)\"", re.IGNORECASE)
 
 
@@ -571,16 +599,27 @@ def _resolve_paths(spec_id: str, docs_dir: Optional[str]) -> tuple[Path, Path]:
     return resolve_doc_paths(spec_id, docs_dir=docs_path)
 
 
-def _resolve_spec_identifier(spec_or_number: str, version: Optional[str], docs_dir: Optional[str]) -> str:
-    """Resolve a spec_id or bare spec number plus version into a concrete spec_id with suffix."""
+def _resolve_spec_identifier(
+    spec_or_number: str, version: Optional[str], docs_dir: Optional[str]
+) -> tuple[str, str, tuple[int, int, int]]:
+    """Resolve a spec_id or bare spec number plus version into a concrete spec_id with suffix.
+
+    Returns (spec_id_with_suffix, base_number, version_tuple).
+    """
 
     spec_or_number = spec_or_number.strip()
     if not spec_or_number:
         raise SpecDocError("spec_id must be non-empty")
 
-    # If already a spec_id with suffix and no override requested, return as-is.
+    # If already a spec_id with suffix and no override requested, return as-is (decode suffix for reporting).
     if "-" in spec_or_number and version is None:
-        return spec_or_number
+        base_number = re.sub(r"[^0-9]", "", spec_or_number.split("-")[0])
+        suffix = spec_or_number.split("-")[1]
+        try:
+            ver_tuple = _decode_version_suffix(suffix)
+        except Exception:
+            ver_tuple = (-1, -1, -1)
+        return spec_or_number, base_number, ver_tuple
 
     base_number_raw = spec_or_number.split("-")[0]
     base_number = re.sub(r"[^0-9]", "", base_number_raw)
@@ -599,7 +638,7 @@ def _resolve_spec_identifier(spec_or_number: str, version: Optional[str], docs_d
         major_val, minor_val, patch_val = latest
 
     suffix = _encode_version_suffix(major_val, minor_val, patch_val)
-    return f"{base_number}-{suffix}"
+    return f"{base_number}-{suffix}", base_number, (major_val, minor_val, patch_val)
 
 
 @app.get("/v1/specs/{spec_id}/toc", operation_id="spec_toc_get", response_model=TOCResponse)
@@ -623,7 +662,7 @@ def get_toc(
     ),
 ) -> TOCResponse:
     try:
-        resolved_spec_id = _resolve_spec_identifier(spec_id, version, docs_dir)
+        resolved_spec_id, base_number, _ = _resolve_spec_identifier(spec_id, version, docs_dir)
         html_path, toc_path = _resolve_paths(resolved_spec_id, docs_dir)
         toc_json = load_toc_json(toc_path)
         entries = load_toc_entries(toc_json)
@@ -632,7 +671,12 @@ def get_toc(
             max_depth=(depth - 1) if depth is not None else None,
         )
     except SpecDocError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        versions = _list_spec_versions(base_number if 'base_number' in locals() else spec_id, docs_dir)
+        if versions:
+            detail = f"{exc}. Available versions for {base_number}: {_format_versions(versions)}"
+        else:
+            detail = f"{exc}. No versions found for {base_number}."
+        raise HTTPException(status_code=404, detail=detail) from exc
 
     toc_items = [
         {
@@ -674,6 +718,13 @@ def grep_spec(
     regex: bool = Query(
         False, description="Treat pattern as a regex (case-insensitive). Invalid regex returns HTTP 400."
     ),
+    version: Optional[str] = Query(
+        None,
+        description=(
+            "Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). "
+            "If omitted and spec_id lacks a suffix, the latest available version is used."
+        ),
+    ),
     docs_dir: Optional[str] = Query(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
@@ -682,10 +733,17 @@ def grep_spec(
     """Search a spec HTML document for a substring and return structured matches."""
 
     try:
-        html_path, toc_path = _resolve_paths(spec_id, docs_dir)
+        resolved_spec_id, base_number, _ = _resolve_spec_identifier(spec_id, version, docs_dir)
+        html_path, toc_path = _resolve_paths(resolved_spec_id, docs_dir)
         payload = _search_spec_text(pattern, html_path, use_regex=regex)
     except SpecDocError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        versions = _list_spec_versions(base_number if 'base_number' in locals() else spec_id, docs_dir)
+        detail = f"{exc}"
+        if versions:
+            detail = f"{detail}. Available versions for {base_number}: {_format_versions(versions)}"
+        else:
+            detail = f"{detail}. No versions found for {base_number}."
+        raise HTTPException(status_code=404, detail=detail) from exc
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
@@ -693,7 +751,7 @@ def grep_spec(
 
     payload.update(
         {
-            "spec_id": spec_id,
+            "spec_id": resolved_spec_id,
             "query": pattern,
             "source": {"html_path": str(html_path), "toc_path": str(toc_path)},
         }
@@ -715,6 +773,13 @@ def get_section_v2(
         ge=1,
         description="Ignored (kept for backward compatibility).",
     ),
+    version: Optional[str] = Query(
+        None,
+        description=(
+            "Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). "
+            "If omitted and spec_id lacks a suffix, the latest available version is used."
+        ),
+    ),
     docs_dir: Optional[str] = Query(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
@@ -723,7 +788,8 @@ def get_section_v2(
     """Extract a section as Markdown with embedded images (base64)."""
 
     try:
-        html_path, toc_path = _resolve_paths(spec_id, docs_dir)
+        resolved_spec_id, base_number, _ = _resolve_spec_identifier(spec_id, version, docs_dir)
+        html_path, toc_path = _resolve_paths(resolved_spec_id, docs_dir)
         toc_json = load_toc_json(toc_path)
         entries = load_toc_entries(toc_json)
         section_html_id = resolve_section_html_id(entries, section_ref)
@@ -744,13 +810,19 @@ def get_section_v2(
             ],
         }
     except SpecDocError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        versions = _list_spec_versions(base_number if 'base_number' in locals() else spec_id, docs_dir)
+        detail = f"{exc}"
+        if versions:
+            detail = f"{detail}. Available versions for {base_number}: {_format_versions(versions)}"
+        else:
+            detail = f"{detail}. No versions found for {base_number}."
+        raise HTTPException(status_code=404, detail=detail) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return {
         "status": "ok",
-        "spec_id": spec_id,
+        "spec_id": resolved_spec_id,
         "section_ref": section_ref,
         "html_id": section_html_id,
         "include_heading": include_heading,
@@ -769,6 +841,13 @@ def get_section_summary(
     spec_id: str,
     section_ref: str,
     include_heading: bool = Query(True, description="Include the heading tag in the extraction."),
+    version: Optional[str] = Query(
+        None,
+        description=(
+            "Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). "
+            "If omitted and spec_id lacks a suffix, the latest available version is used."
+        ),
+    ),
     docs_dir: Optional[str] = Query(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
@@ -777,7 +856,8 @@ def get_section_summary(
     """Return size-only metadata for a section."""
 
     try:
-        html_path, toc_path = _resolve_paths(spec_id, docs_dir)
+        resolved_spec_id, base_number, _ = _resolve_spec_identifier(spec_id, version, docs_dir)
+        html_path, toc_path = _resolve_paths(resolved_spec_id, docs_dir)
         toc_json = load_toc_json(toc_path)
         entries = load_toc_entries(toc_json)
         section_html_id = resolve_section_html_id(entries, section_ref)
@@ -786,13 +866,19 @@ def get_section_summary(
         chars = len(markdown)
         bytes_len = len(markdown.encode("utf-8"))
     except SpecDocError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        versions = _list_spec_versions(base_number if 'base_number' in locals() else spec_id, docs_dir)
+        detail = f"{exc}"
+        if versions:
+            detail = f"{detail}. Available versions for {base_number}: {_format_versions(versions)}"
+        else:
+            detail = f"{detail}. No versions found for {base_number}."
+        raise HTTPException(status_code=404, detail=detail) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return {
         "status": "ok",
-        "spec_id": spec_id,
+        "spec_id": resolved_spec_id,
         "section_ref": section_ref,
         "html_id": section_html_id,
         "include_heading": include_heading,
@@ -878,6 +964,13 @@ def resolve_spec_version(
 def get_table(
     spec_id: str,
     table_id: str,
+    version: Optional[str] = Query(
+        None,
+        description=(
+            "Optional version as MAJ.MIN.PATCH (e.g. 19.0.0). "
+            "If omitted and spec_id lacks a suffix, the latest available version is used."
+        ),
+    ),
     docs_dir: Optional[str] = Query(
         None,
         description="Optional override for the specs directory. Defaults to specs_dir from spec_config.json.",
@@ -886,19 +979,26 @@ def get_table(
     """Extract a specific table as structured Markdown."""
 
     try:
-        html_path, _ = _resolve_paths(spec_id, docs_dir)
+        resolved_spec_id, base_number, _ = _resolve_spec_identifier(spec_id, version, docs_dir)
+        html_path, _ = _resolve_paths(resolved_spec_id, docs_dir)
         extracted = extract_table_html(html_path, table_id)
         markdown = table_html_to_markdown(extracted.html)
         payload = _build_markdown(markdown)
     except SpecDocError as exc:
-        raise HTTPException(status_code=404, detail=str(exc)) from exc
+        versions = _list_spec_versions(base_number if 'base_number' in locals() else spec_id, docs_dir)
+        detail = f"{exc}"
+        if versions:
+            detail = f"{detail}. Available versions for {base_number}: {_format_versions(versions)}"
+        else:
+            detail = f"{detail}. No versions found for {base_number}."
+        raise HTTPException(status_code=404, detail=detail) from exc
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     return {
         "status": "ok",
-        "spec_id": spec_id,
-        "table_id": table_id,
+        "spec_id": resolved_spec_id,
+        "table_id": extracted.table_id,
         "caption": extracted.caption,
         "markdown": payload,
         "source": {"html_path": str(html_path)},
