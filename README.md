@@ -31,7 +31,9 @@ Set the specs root via `--docs-dir /path/to/specs`, or export `SPEC_DOCS_DIR`. W
 - Section summary: `GET /v1/specs/{spec_id}/sections/{clause_id_ref}/summary` — Optional `version=MAJ.MIN.PATCH`; returns `chars`/`bytes` only (no content).  
   Example: `curl "http://localhost:8010/v1/specs/38901/sections/4-7-2/summary?version=19.0.0"`
 - Tables: `GET /v1/specs/{spec_id}/tables/{table_id}` — Optional `version=MAJ.MIN.PATCH`; table to Markdown with caption. `table_id` can be passed with or without the `Table` prefix.  
-  Example (no prefix): `curl "http://localhost:8010/v1/specs/38901/tables/5.4-1?version=19.0.0"`
+  Examples:  
+  - `curl "http://localhost:8010/v1/specs/38901/tables/5.4-1?version=19.0.0"` (with version)  
+  - `curl "http://localhost:8010/v1/specs/38.300/tables/5.3.3-1"` (dotted spec id; auto-latest)
 - Version resolver (supports `version=latest` or `major/minor/patch`): `GET /v1/specs/resolve?spec_number=38901&version=latest`  
   Example: `curl "http://localhost:8010/v1/specs/resolve?spec_number=38901&version=latest"`
 - TOC: `GET /v1/specs/{spec_id}/toc` — Optional `depth` filter.  
