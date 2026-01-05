@@ -45,6 +45,8 @@ Set the specs root via `--docs-dir /path/to/specs`, or export `SPEC_DOCS_DIR`. W
   - `curl "http://localhost:8010/v1/specs/38901/toc?version=19.0.0"`  (forces j00)
 - Grep: `GET /v1/specs/{spec_id}/grep?pattern=...&regex=bool` — Optional `version=MAJ.MIN.PATCH`; substring/regex search.  
   Example: `curl "http://localhost:8010/v1/specs/38901/grep?pattern=beamforming&regex=false&version=19.0.0"`
+- List versions: `GET /v1/specs/versions` — Lists all available specs with dotted `spec_id` (e.g., `38.300`) and versions as `MAJ.MIN.PATCH`.  
+  Example: `curl "http://localhost:8010/v1/specs/versions"`
 - `GET /v1/health`, `GET /v1/help` (tool metadata).
 
 Example v2 response (single chunk):
