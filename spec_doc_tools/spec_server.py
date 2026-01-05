@@ -221,6 +221,20 @@ class HelpResponse(BaseModel):
     status: str
 
 
+class SpecVersionEntry(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    spec_number: str
+    versions: list[str]
+
+
+class SpecVersionsResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    status: str
+    specs: list[SpecVersionEntry]
+
+
 HELP_ENTRIES = [
     {
         "name": "spec_sections_v2_get",
@@ -351,6 +365,16 @@ HELP_ENTRIES = [
             "matches": "List[dict(index,line,char_offset,message_length,message)]",
             "chunks": "List[str]",
             "source": "dict(html_path, toc_path)",
+        },
+    },
+    {
+        "name": "spec_versions_list",
+        "method": "GET",
+        "path": "/v1/specs/versions",
+        "description": "List all spec numbers with available versions.",
+        "response": {
+            "status": "ok",
+            "specs": "List[dict(spec_number, versions[list[str]])]",
         },
     },
 ]
@@ -706,6 +730,45 @@ def health() -> HealthResponse:
 @app.get("/v1/help", operation_id="spec_help_get", response_model=HelpResponse)
 def help_endpoint() -> HelpResponse:
     return {"status": "ok", "tools": HELP_ENTRIES}
+
+
+@app.get(
+    "/v1/specs/versions",
+    operation_id="spec_versions_list",
+    response_model=SpecVersionsResponse,
+)
+def list_spec_versions(docs_dir: Optional[str] = Query(None, description="Optional override for specs directory.")) -> SpecVersionsResponse:
+    root = _docs_root(docs_dir)
+    specs: dict[str, set[tuple[int, int, int]]] = {}
+    for path in root.glob("*-*"):
+        if path.is_dir():
+            name = path.name
+            suffix = name.split("-")[-1]
+        else:
+            if not (path.suffix == ".html" or path.name.endswith("_toc.json")):
+                continue
+            name = path.stem
+            suffix = name.split("-")[-1]
+            if suffix.endswith("_toc"):
+                suffix = suffix[: -len("_toc")]
+        try:
+            version_tuple = _decode_version_suffix(suffix)
+        except ValueError:
+            continue
+        spec_number = name.split("-")[0]
+        specs.setdefault(spec_number, set()).add(version_tuple)
+
+    entries = []
+    for spec_number, versions in sorted(specs.items()):
+        sorted_versions = sorted(versions)
+        entries.append(
+            {
+                "spec_number": spec_number,
+                "versions": [f"V{v[0]}.{v[1]}.{v[2]} ({_encode_version_suffix(*v)})" for v in sorted_versions],
+            }
+        )
+
+    return {"status": "ok", "specs": entries}
 
 
 @app.get(
