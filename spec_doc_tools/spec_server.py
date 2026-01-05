@@ -509,7 +509,7 @@ def _list_spec_versions(spec_number: str, docs_dir: Optional[str]) -> list[tuple
 
 
 def _format_versions(versions: list[tuple[int, int, int]]) -> str:
-    return ", ".join(f"{maj}.{min}.{pat} ({_encode_version_suffix(maj, min, pat)})" for maj, min, pat in versions)
+    return ", ".join(f"{maj}.{min}.{pat}" for maj, min, pat in versions)
 
 
 def _format_versions(versions: list[tuple[int, int, int]]) -> str:
@@ -764,7 +764,7 @@ def list_spec_versions(docs_dir: Optional[str] = Query(None, description="Option
         entries.append(
             {
                 "spec_id": f"{spec_number[:2]}.{spec_number[2:]}",
-                "versions": [f"{v[0]}.{v[1]}.{v[2]} ({_encode_version_suffix(*v)})" for v in sorted_versions],
+                "versions": [f"{v[0]}.{v[1]}.{v[2]}" for v in sorted_versions],
             }
         )
 
